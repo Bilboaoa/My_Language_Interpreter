@@ -1,0 +1,5 @@
+fun main()
+[
+	var a = 2000000000;
+	return 0;
+]

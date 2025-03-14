@@ -1,0 +1,12 @@
+fun test_function()
+[
+	var example_var = 1;
+	example_var = "aaa"; // czy dozwolone
+	return 0;
+]
+
+fun main() 
+[
+	test_function();
+	return 0;
+]

@@ -1,0 +1,11 @@
+
+fun recursive(var a)
+[
+	return recursive(a);
+]
+
+fun main()
+[
+	recursive(1)
+	return 0;
+]

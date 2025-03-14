@@ -1,0 +1,9 @@
+// Najpierw wykonuje jedna a pozniej wrzuca wyjscie na wejscie drugiej
+
+fun main()
+[
+	var square = function(x) [ return x * x ];
+    var increment = function(x) [ return x + 1 ];
+    var square_then_increment = double | increment;
+	return 0;
+]

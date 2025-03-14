@@ -1,0 +1,13 @@
+fun test_function()
+[
+	var example_var = 1;
+	var point_var = 1.45;
+    	point_var = point_var + (example_var as float);
+	return point_var;
+]
+
+fun main() 
+[
+	test_function();
+	return 0;
+]
