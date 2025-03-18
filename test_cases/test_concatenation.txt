@@ -1,0 +1,8 @@
+fun main()
+[
+        var my_str = "Ania";
+        var my_str2 = "i Basia";
+	my_str = my_str~my_str2;
+	// TEST(my_str = "Ania i Basia");
+        return 0;
+]

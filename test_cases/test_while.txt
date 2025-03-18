@@ -1,0 +1,10 @@
+fun main()
+[
+        var my_fun = 1;
+        while(my_fun <= 5)
+	[
+		my_fun = my_fun + 1;
+	]
+	// TEST(my_fun = 6);
+        return 0;
+]
