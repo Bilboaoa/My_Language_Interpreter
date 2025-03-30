@@ -4,17 +4,47 @@
 #include <string>
 
 enum class TokenType {
-    Identifier,
+    Identifier, 
     Number,
+    StringLiteral,
+
+    // Keywords
+    Var, 
+    Const,
+    Fun,
+    Return,
+    If,
+    Else,
+    While,
+    As,
+    Print,
+
+    // Operators
+    Plus, Minus, Star, Slash,
+    Equal, EqualEqual, NotEqual,
+    Greater, GreaterEqual,
+    Less, LessEqual,
+    Pipe, AtAt,
+    Assign,
+
+    // Symbols
+    LParen, RParen,
+    LBracket, RBracket,
+    Semicolon, Comma,
+
     EndOfFile,
     Unknown
 };
+
 
 struct Token {
     TokenType type;
     std::string value;
     int line;
     int column;
+
+    Token(TokenType t, const std::string& v, int l, int c)
+        : type(t), value(v), line(l), column(c) {}
 };
 
 class Lexer {
@@ -31,6 +61,6 @@ private:
 
     char peek();
     char get();
-    void skipWhitespace();
-    Token scanToken();
+    void skipWhitespaceAndComments();
+    Token scanToken();    
 };
