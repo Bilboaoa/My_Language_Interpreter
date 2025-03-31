@@ -1,4 +1,2 @@
-mkdir build
-cd build
-cmake ..
-make
+cmake -Bbuild
+cmake --build build
