@@ -147,3 +147,71 @@ TEST_CASE("Basic as statement", "[lexer]") {
     REQUIRE(tokens[2].type == TokenType::Type);
     REQUIRE(tokens[3].type == TokenType::Semicolon);
 }
+
+TEST_CASE("Basic print", "[lexer]") {
+    std::istringstream input(R"( print("Hello World"); )");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Print);
+    REQUIRE(tokens[1].type == TokenType::LParen);
+    REQUIRE(tokens[2].type == TokenType::StringLiteral);
+    REQUIRE(tokens[2].value == "Hello World");
+    REQUIRE(tokens[3].type == TokenType::RParen);
+    REQUIRE(tokens[4].type == TokenType::Semicolon);
+}
+
+TEST_CASE("Operator Plus", "[lexer][operators]") {
+    std::istringstream input("a + b;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[1].type == TokenType::Plus);
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[3].type == TokenType::Semicolon);
+}
+
+TEST_CASE("Operator Minus", "[lexer][operators]") {
+    std::istringstream input("a - b;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[1].type == TokenType::Minus);
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[3].type == TokenType::Semicolon);
+}
+
+TEST_CASE("Operator Star", "[lexer][operators]") {
+    std::istringstream input("a * b;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[1].type == TokenType::Star);
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[3].type == TokenType::Semicolon);
+}
+
+TEST_CASE("Operator Slash", "[lexer][operators]") {
+    std::istringstream input("a / b;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[1].type == TokenType::Slash);
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[3].type == TokenType::Semicolon);
+}
+
+TEST_CASE("Operator Assign", "[lexer][operators]") {
+    std::istringstream input("a = b;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[1].type == TokenType::Assign);
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[3].type == TokenType::Semicolon);
+}
