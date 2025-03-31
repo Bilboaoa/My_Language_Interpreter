@@ -7,6 +7,7 @@ enum class TokenType {
     Identifier, 
     Number,
     StringLiteral,
+    Type,
 
     // Keywords
     Var, 

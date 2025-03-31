@@ -3,6 +3,9 @@
 #include <unordered_map>
 
 const std::unordered_map<std::string, TokenType> keywords = {
+    {"int", TokenType::Type},
+    {"float", TokenType::Type},
+    {"string", TokenType::Type},
     {"var", TokenType::Var},
     {"const", TokenType::Const},
     {"fun", TokenType::Fun},
