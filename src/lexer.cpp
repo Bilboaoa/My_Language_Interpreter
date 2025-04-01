@@ -154,11 +154,14 @@ Token Lexer::scanToken() {
 
 std::vector<Token> Lexer::tokenize() {
     std::vector<Token> tokens;
-    while (true) {
-        Token token = scanToken();
+    Token token = scanToken();
+
+    while (token.type != TokenType::EndOfFile) {
         tokens.push_back(token);
-        if (token.type == TokenType::EndOfFile)
-            break;
+        token = scanToken();
     }
+
+    tokens.push_back(token);
     return tokens;
+
 }
