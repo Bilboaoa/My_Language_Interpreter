@@ -1,6 +1,6 @@
 fun example()
 [
-	return fun(a, b) [return a+b;];
+	return fun(var a, var b) [return a+b;];
 ]
 
 fun main()

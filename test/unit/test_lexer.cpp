@@ -18,6 +18,17 @@ TEST_CASE("Identifier parsing", "[lexer][identifier]") {
     REQUIRE(tokens[3].value == "alpha_temp1");
 }
 
+TEST_CASE("Invalid identifier parsing", "[lexer][identifier]") {
+    std::istringstream input("123xdd;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Number);
+    REQUIRE(tokens[0].value == "123");
+    REQUIRE(tokens[1].type == TokenType::Identifier);
+    REQUIRE(tokens[1].value == "xdd");
+}
+
 TEST_CASE("Number parsing (int)", "[lexer][number]") {
     std::istringstream input("123;");
     Lexer lexer(input);
@@ -123,6 +134,39 @@ TEST_CASE("Function declaration", "[lexer][keyword]") {
     REQUIRE(tokens[9].type == TokenType::Semicolon);
     REQUIRE(tokens[10].type == TokenType::RBracket);
 }
+
+TEST_CASE("Embeded function declaration", "[lexer][keyword]") {
+    std::istringstream input("fun abc(var a) [return fun(a) [return a+1; ];]");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Fun);
+    REQUIRE(tokens[0].value == "fun");
+    REQUIRE(tokens[1].type == TokenType::Identifier);
+    REQUIRE(tokens[1].value == "abc");
+    REQUIRE(tokens[2].type == TokenType::LParen);
+    REQUIRE(tokens[3].type == TokenType::Var);
+    REQUIRE(tokens[4].type == TokenType::Identifier);
+    REQUIRE(tokens[4].value == "a");
+    REQUIRE(tokens[5].type == TokenType::RParen);
+    REQUIRE(tokens[6].type == TokenType::LBracket);
+    REQUIRE(tokens[7].type == TokenType::Return);
+    REQUIRE(tokens[8].type == TokenType::Fun); 
+    REQUIRE(tokens[9].type == TokenType::LParen);
+    REQUIRE(tokens[10].type == TokenType::Identifier);
+    REQUIRE(tokens[11].type == TokenType::RParen);
+    REQUIRE(tokens[12].type == TokenType::LBracket);
+    REQUIRE(tokens[13].type == TokenType::Return);
+    REQUIRE(tokens[14].type == TokenType::Identifier);
+    REQUIRE(tokens[14].value == "a");
+    REQUIRE(tokens[15].type == TokenType::Plus);
+    REQUIRE(tokens[16].type == TokenType::Number);
+    REQUIRE(tokens[17].type == TokenType::Semicolon);
+    REQUIRE(tokens[18].type == TokenType::RBracket);
+    REQUIRE(tokens[19].type == TokenType::Semicolon);
+    REQUIRE(tokens[20].type == TokenType::RBracket);
+}
+
 
 TEST_CASE("Basic if statement", "[lexer][keyword]") {
     std::istringstream input("if(a > b)");
