@@ -27,6 +27,7 @@ enum class TokenType {
     Less, LessEqual,
     Pipe, AtAt,
     Assign,
+    And, Or,
 
     // Symbols
     LParen, RParen,

@@ -375,6 +375,28 @@ TEST_CASE("Operator Pipe", "[lexer][operators]") {
     REQUIRE(tokens[3].type == TokenType::Semicolon);
 }
 
+TEST_CASE("Logical AND operator", "[lexer][operators]") {
+    std::istringstream input("a && b;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[1].type == TokenType::And);
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[3].type == TokenType::Semicolon);
+}
+
+TEST_CASE("Logical OR operator", "[lexer][operators]") {
+    std::istringstream input("a || b;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[1].type == TokenType::Or);
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[3].type == TokenType::Semicolon);
+}
+
 TEST_CASE("Parentheses", "[lexer][symbols]") {
     std::istringstream input("(a);");
     Lexer lexer(input);
@@ -469,3 +491,11 @@ TEST_CASE("Inline comment skipping", "[lexer][comments]") {
     REQUIRE(tokens[10].type == TokenType::Semicolon);
 }
 
+TEST_CASE("Whitespace-only input", "[lexer][comments]") {
+    std::istringstream input("   \n\t  ");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens.size() == 1);
+    REQUIRE(tokens[0].type == TokenType::EndOfFile);
+}

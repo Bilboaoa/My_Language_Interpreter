@@ -87,7 +87,8 @@ Token Lexer::scanToken() {
 
     if (std::isdigit(ch)) {
         std::string number;
-        while (std::isdigit(peek())) number += get();
+        while (std::isdigit(peek())) 
+            number += get();
 
         if (peek() == '.') {
             number += get();
@@ -136,7 +137,9 @@ Token Lexer::scanToken() {
         case '<':
             if (peek() == '=') { get(); return Token(TokenType::LessEqual, "<=", line, column); }
             return Token(TokenType::Less, "<", line, column);
-        case '|': return Token(TokenType::Pipe, "|", line, column);
+        case '|': 
+            if (peek() == '|') { get(); return Token(TokenType::Or, "||", line, column); }
+            return Token(TokenType::Pipe, "|", line, column);
         case '@':
             if (peek() == '@') { get(); return Token(TokenType::AtAt, "@@", line, column); }
             break;
@@ -146,6 +149,9 @@ Token Lexer::scanToken() {
         case ']': return Token(TokenType::RBracket, "]", line, column);
         case ';': return Token(TokenType::Semicolon, ";", line, column);
         case ',': return Token(TokenType::Comma, ",", line, column);
+        case '&':
+            if (peek() == '&') { get(); return Token(TokenType::And, "&&", line, column); }
+            break;
     }
 
     return Token(TokenType::Unknown, std::string(1, ch), line, column);
