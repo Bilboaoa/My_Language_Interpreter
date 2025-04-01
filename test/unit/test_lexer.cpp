@@ -215,3 +215,69 @@ TEST_CASE("Operator Assign", "[lexer][operators]") {
     REQUIRE(tokens[2].type == TokenType::Identifier);
     REQUIRE(tokens[3].type == TokenType::Semicolon);
 }
+
+TEST_CASE("Operator EqualEqual", "[lexer][operators]") {
+    std::istringstream input("a == b;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[1].type == TokenType::EqualEqual);
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[3].type == TokenType::Semicolon);
+}
+
+TEST_CASE("Operator NotEqual", "[lexer][operators]") {
+    std::istringstream input("a != b;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[1].type == TokenType::NotEqual);
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[3].type == TokenType::Semicolon);
+}
+
+TEST_CASE("Operator Greater", "[lexer][operators]") {
+    std::istringstream input("a > b;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[1].type == TokenType::Greater);
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[3].type == TokenType::Semicolon);
+}
+
+TEST_CASE("Operator GreaterEqual", "[lexer][operators]") {
+    std::istringstream input("a >= b;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[1].type == TokenType::GreaterEqual);
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[3].type == TokenType::Semicolon);
+}
+
+TEST_CASE("Operator Less", "[lexer][operators]") {
+    std::istringstream input("a < b;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[1].type == TokenType::Less);
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[3].type == TokenType::Semicolon);
+}
+
+TEST_CASE("Operator LessEqual", "[lexer][operators]") {
+    std::istringstream input("a <= b;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[1].type == TokenType::LessEqual);
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[3].type == TokenType::Semicolon);
+}
