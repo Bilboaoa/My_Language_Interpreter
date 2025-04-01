@@ -9,6 +9,9 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 add_executable(bibl ${SOURCES})
 target_include_directories(bibl PRIVATE src include)
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif()
 
 include(FetchContent)
 FetchContent_Declare(

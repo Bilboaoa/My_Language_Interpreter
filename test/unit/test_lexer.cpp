@@ -31,6 +31,20 @@ TEST_CASE("Invalid identifier parsing", "[lexer][identifier]")
     REQUIRE(tokens[1].value == "xdd");
 }
 
+TEST_CASE("Identifier parsing with keyword", "[lexer][identifier]")
+{
+    std::istringstream input("var_a fun_a if_a");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[0].value == "var_a");
+    REQUIRE(tokens[1].type == TokenType::Identifier);
+    REQUIRE(tokens[1].value == "fun_a");
+    REQUIRE(tokens[2].type == TokenType::Identifier);
+    REQUIRE(tokens[2].value == "if_a");
+}
+
 TEST_CASE("Number parsing (int)", "[lexer][number]")
 {
     std::istringstream input("123;");
