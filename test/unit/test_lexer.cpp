@@ -36,6 +36,24 @@ TEST_CASE("Number parsing (float)", "[lexer][number]") {
     REQUIRE(tokens[0].value == "45.67");
 }
 
+TEST_CASE("String parsing", "[lexer][string]") {
+    std::istringstream input("\"Hi\"");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::StringLiteral);
+    REQUIRE(tokens[0].value == "Hi");
+}
+
+TEST_CASE("String with escape characters", "[lexer][string]") {
+    std::istringstream input("var s = \"\\\"quoted\\\" and \\\\slash\";");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[3].type == TokenType::StringLiteral);
+    REQUIRE(tokens[3].value == "\"quoted\" and \\slash");
+}
+
 TEST_CASE("Simple variable declaration", "[lexer][keyword]") {
     std::istringstream input("var x = 42;");
     Lexer lexer(input);
@@ -59,6 +77,20 @@ TEST_CASE("String literal parsing", "[lexer][keyword]") {
     REQUIRE(tokens[3].type == TokenType::StringLiteral);
     REQUIRE(tokens[3].value == "Hello\nWorld");
 }
+
+TEST_CASE("Type keywords recognized as TokenType::Type", "[lexer][type]") {
+    std::istringstream input("int float string");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Type);
+    REQUIRE(tokens[0].value == "int");
+    REQUIRE(tokens[1].type == TokenType::Type);
+    REQUIRE(tokens[1].value == "float");
+    REQUIRE(tokens[2].type == TokenType::Type);
+    REQUIRE(tokens[2].value == "string");
+}
+
 
 TEST_CASE("Constant variable declaration", "[lexer][keyword]") {
     std::istringstream input("const var s = 12;");
@@ -410,3 +442,30 @@ TEST_CASE("Unknown character handling", "[lexer][error]") {
 
     REQUIRE(foundUnknown);
 }
+
+TEST_CASE("Comments handling", "[lexer][comments]") {
+    std::istringstream input("// This is a comment;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(!tokens.empty());
+}
+
+TEST_CASE("Inline comment skipping", "[lexer][comments]") {
+    std::istringstream input("var x = 5; // initialize x\nx = x + 1;");
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Var);
+    REQUIRE(tokens[1].type == TokenType::Identifier);
+    REQUIRE(tokens[2].type == TokenType::Assign);
+    REQUIRE(tokens[3].type == TokenType::Number);
+    REQUIRE(tokens[4].type == TokenType::Semicolon);
+    REQUIRE(tokens[5].type == TokenType::Identifier);
+    REQUIRE(tokens[6].type == TokenType::Assign);
+    REQUIRE(tokens[7].type == TokenType::Identifier);
+    REQUIRE(tokens[8].type == TokenType::Plus);
+    REQUIRE(tokens[9].type == TokenType::Number);
+    REQUIRE(tokens[10].type == TokenType::Semicolon);
+}
+
