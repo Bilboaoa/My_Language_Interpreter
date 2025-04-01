@@ -3,14 +3,15 @@
 #include <vector>
 #include <string>
 
-enum class TokenType {
-    Identifier, 
+enum class TokenType
+{
+    Identifier,
     Number,
     StringLiteral,
     Type,
 
     // Keywords
-    Var, 
+    Var,
     Const,
     Fun,
     Return,
@@ -21,40 +22,54 @@ enum class TokenType {
     Print,
 
     // Operators
-    Plus, Minus, Star, Slash,
-    Equal, EqualEqual, NotEqual,
-    Greater, GreaterEqual,
-    Less, LessEqual,
-    Pipe, AtAt,
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    Equal,
+    EqualEqual,
+    NotEqual,
+    Greater,
+    GreaterEqual,
+    Less,
+    LessEqual,
+    Pipe,
+    AtAt,
     Assign,
-    And, Or,
+    And,
+    Or,
 
     // Symbols
-    LParen, RParen,
-    LBracket, RBracket,
-    Semicolon, Comma,
+    LParen,
+    RParen,
+    LBracket,
+    RBracket,
+    Semicolon,
+    Comma,
 
     EndOfFile,
     Unknown
 };
 
-
-struct Token {
+struct Token
+{
     TokenType type;
     std::string value;
     int line;
     int column;
 
-    Token(TokenType t, const std::string& v, int l, int c)
-        : type(t), value(v), line(l), column(c) {}
+    Token(TokenType t, const std::string& v, int l, int c) : type(t), value(v), line(l), column(c)
+    {
+    }
 };
 
-class Lexer {
-public:
+class Lexer
+{
+   public:
     explicit Lexer(std::istream& inputStream);
     std::vector<Token> tokenize();
 
-private:
+   private:
     std::istream& input;
     int line;
     int column;
@@ -64,5 +79,5 @@ private:
     char peek();
     char get();
     void skipWhitespaceAndComments();
-    Token scanToken();    
+    Token scanToken();
 };
