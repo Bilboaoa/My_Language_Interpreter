@@ -4,18 +4,19 @@
 #include <limits>
 
 #include "token.hpp"
+#include "char_stream.hpp"
 
 class Lexer
 {
    public:
-    explicit Lexer(std::istream& inputStream);
+    explicit Lexer(CharStream& inputStream);
     std::vector<Token> tokenize();
 
    private:
     static constexpr int MAXINT = std::numeric_limits<int>::max();
     static constexpr int ASCII_ZERO = (int)'0';
 
-    std::istream& input;
+    CharStream& input;
     int line;
     int column;
     char currentChar;
