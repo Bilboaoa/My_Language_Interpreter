@@ -97,7 +97,7 @@ Token Lexer::scanToken()
     if (currentChar == '"')
     {
         get();
-        std::string str;
+        std::string strLiteral;
         while (currentChar != '"' && currentChar != EOF)
         {
             if (currentChar == '\\')
@@ -109,61 +109,61 @@ Token Lexer::scanToken()
                 switch (currentChar)
                 {
                     case 'n':
-                        str += '\n';
+                    strLiteral += '\n';
                         break;
                     case 't':
-                        str += '\t';
+                    strLiteral += '\t';
                         break;
                     case '"':
-                        str += '"';
+                    strLiteral += '"';
                         break;
                     case '\\':
-                        str += '\\';
+                    strLiteral += '\\';
                         break;
                     default:
-                        str += currentChar;
+                    strLiteral += currentChar;
                         break;
                 }
                 get();
             }
             else
             {
-                str += currentChar;
+                strLiteral += currentChar;
                 get();
             }
         }
         if (currentChar == '"') get();
-        return Token(TokenType::StringLiteral, str, tokenStartLine, tokenStartCol);
+        return Token(TokenType::StringLiteral, strLiteral, tokenStartLine, tokenStartCol);
     }
 
     switch (currentChar)
     {
         case '+':
             get();
-            return Token(TokenType::Plus, "+", tokenStartLine, tokenStartCol);
+            return Token(TokenType::Plus, tokenStartLine, tokenStartCol);
         case '-':
             get();
-            return Token(TokenType::Minus, "-", tokenStartLine, tokenStartCol);
+            return Token(TokenType::Minus, tokenStartLine, tokenStartCol);
         case '*':
             get();
-            return Token(TokenType::Star, "*", tokenStartLine, tokenStartCol);
+            return Token(TokenType::Star, tokenStartLine, tokenStartCol);
         case '/':
             get();
-            return Token(TokenType::Slash, "/", tokenStartLine, tokenStartCol);
+            return Token(TokenType::Slash, tokenStartLine, tokenStartCol);
         case '=':
             get();
             if (currentChar == '=')
             {
                 get();
-                return Token(TokenType::EqualEqual, "==", tokenStartLine, tokenStartCol);
+                return Token(TokenType::EqualEqual, tokenStartLine, tokenStartCol);
             }
-            return Token(TokenType::Assign, "=", tokenStartLine, tokenStartCol);
+            return Token(TokenType::Assign, tokenStartLine, tokenStartCol);
         case '!':
             get();
             if (currentChar == '=')
             {
                 get();
-                return Token(TokenType::NotEqual, "!=", tokenStartLine, tokenStartCol);
+                return Token(TokenType::NotEqual, tokenStartLine, tokenStartCol);
             }
             break;
         case '>':
@@ -171,57 +171,57 @@ Token Lexer::scanToken()
             if (currentChar == '=')
             {
                 get();
-                return Token(TokenType::GreaterEqual, ">=", tokenStartLine, tokenStartCol);
+                return Token(TokenType::GreaterEqual, tokenStartLine, tokenStartCol);
             }
-            return Token(TokenType::Greater, ">", tokenStartLine, tokenStartCol);
+            return Token(TokenType::Greater, tokenStartLine, tokenStartCol);
         case '<':
             get();
             if (currentChar == '=')
             {
                 get();
-                return Token(TokenType::LessEqual, "<=", tokenStartLine, tokenStartCol);
+                return Token(TokenType::LessEqual, tokenStartLine, tokenStartCol);
             }
-            return Token(TokenType::Less, "<", tokenStartLine, tokenStartCol);
+            return Token(TokenType::Less, tokenStartLine, tokenStartCol);
         case '|':
             get();
             if (currentChar == '|')
             {
                 get();
-                return Token(TokenType::Or, "||", tokenStartLine, tokenStartCol);
+                return Token(TokenType::Or, tokenStartLine, tokenStartCol);
             }
-            return Token(TokenType::Pipe, "|", tokenStartLine, tokenStartCol);
+            return Token(TokenType::Pipe, tokenStartLine, tokenStartCol);
         case '@':
             get();
             if (currentChar == '@')
             {
                 get();
-                return Token(TokenType::AtAt, "@@", tokenStartLine, tokenStartCol);
+                return Token(TokenType::AtAt, tokenStartLine, tokenStartCol);
             }
             break;
         case '(':
             get();
-            return Token(TokenType::LParen, "(", tokenStartLine, tokenStartCol);
+            return Token(TokenType::LParen, tokenStartLine, tokenStartCol);
         case ')':
             get();
-            return Token(TokenType::RParen, ")", tokenStartLine, tokenStartCol);
+            return Token(TokenType::RParen, tokenStartLine, tokenStartCol);
         case '[':
             get();
-            return Token(TokenType::LBracket, "[", tokenStartLine, tokenStartCol);
+            return Token(TokenType::LBracket, tokenStartLine, tokenStartCol);
         case ']':
             get();
-            return Token(TokenType::RBracket, "]", tokenStartLine, tokenStartCol);
+            return Token(TokenType::RBracket, tokenStartLine, tokenStartCol);
         case ';':
             get();
-            return Token(TokenType::Semicolon, ";", tokenStartLine, tokenStartCol);
+            return Token(TokenType::Semicolon, tokenStartLine, tokenStartCol);
         case ',':
             get();
-            return Token(TokenType::Comma, ",", tokenStartLine, tokenStartCol);
+            return Token(TokenType::Comma, tokenStartLine, tokenStartCol);
         case '&':
             get();
             if (currentChar == '&')
             {
                 get();
-                return Token(TokenType::And, "&&", tokenStartLine, tokenStartCol);
+                return Token(TokenType::And, tokenStartLine, tokenStartCol);
             }
             break;
     }

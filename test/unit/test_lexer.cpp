@@ -440,7 +440,6 @@ TEST_CASE("Operator AtAt", "[lexer][operators]")
     REQUIRE(tokens[0].type == TokenType::Identifier);
     REQUIRE(tokens[0].value == "f");
     REQUIRE(tokens[1].type == TokenType::AtAt);
-    REQUIRE(tokens[1].value == "@@");
     REQUIRE(tokens[2].type == TokenType::Identifier);
     REQUIRE(tokens[2].value == "g");
     REQUIRE(tokens[3].type == TokenType::Semicolon);
@@ -455,7 +454,6 @@ TEST_CASE("Operator Pipe", "[lexer][operators]")
     REQUIRE(tokens[0].type == TokenType::Identifier);
     REQUIRE(tokens[0].value == "f");
     REQUIRE(tokens[1].type == TokenType::Pipe);
-    REQUIRE(tokens[1].value == "|");
     REQUIRE(tokens[2].type == TokenType::Identifier);
     REQUIRE(tokens[2].value == "g");
     REQUIRE(tokens[3].type == TokenType::Semicolon);

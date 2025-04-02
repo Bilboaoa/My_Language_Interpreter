@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <optional>
 
 enum class TokenType
 {
@@ -54,13 +55,15 @@ enum class TokenType
 struct Token
 {
     TokenType type;
-    std::string value;
+    std::optional<std::string> value;
     int line;
     int column;
 
     Token(TokenType t, const std::string& v, int l, int c) : type(t), value(v), line(l), column(c)
     {
     }
+    Token(TokenType type, int line, int column)
+        : type(type), value(std::nullopt), line(line), column(column) {}
 };
 
 class Lexer

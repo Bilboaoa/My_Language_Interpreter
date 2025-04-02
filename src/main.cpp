@@ -21,10 +21,16 @@ int main(int argc, char** argv)
     auto tokens = lexer.tokenize();
 
     for (const auto& t : tokens)
-    {
-        std::cout << "Token(" << static_cast<int>(t.type) << ", \"" << t.value
-                  << "\", line: " << t.line << ", col: " << t.column << ")\n";
-    }
+{
+    std::cout << "Token(" << static_cast<int>(t.type) << ", ";
+    if (t.value.has_value())
+        std::cout << "\"" << t.value.value() << "\"";
+    else
+        std::cout << "null";
+
+    std::cout << ", line: " << t.line << ", col: " << t.column << ")\n";
+}
+
 
     return 0;
 }
