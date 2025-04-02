@@ -65,6 +65,18 @@ TEST_CASE("Number parsing (int)", "[lexer][number]")
     REQUIRE(tokens[0].getValue<int>() == 123);
 }
 
+TEST_CASE("Number parsing out for range (int)", "[lexer][number]")
+{
+    std::istringstream input("2147483650;");
+    CharStream stream(input);
+    Lexer lexer(stream);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::Number);
+    REQUIRE(tokens[0].getValue<int>() == 214748365);
+}
+
+
 TEST_CASE("Number parsing (float)", "[lexer][number]")
 {
     std::istringstream input("45.67;");
@@ -86,6 +98,29 @@ TEST_CASE("String parsing", "[lexer][string]")
     REQUIRE(tokens[0].type == TokenType::StringLiteral);
     REQUIRE(std::get<std::string>(tokens[0].value.value()) == "Hi");
 }
+
+TEST_CASE("String parsing with numbers", "[lexer][string]")
+{
+    std::istringstream input("\"12345\"");
+    CharStream stream(input);
+    Lexer lexer(stream);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::StringLiteral);
+    REQUIRE(std::get<std::string>(tokens[0].value.value()) == "12345");
+}
+
+TEST_CASE("String parsing no end quote", "[lexer][string]")
+{
+    std::istringstream input("\"12345");
+    CharStream stream(input);
+    Lexer lexer(stream);
+    auto tokens = lexer.tokenize();
+
+    REQUIRE(tokens[0].type == TokenType::StringLiteral);
+    REQUIRE(std::get<std::string>(tokens[0].value.value()) == "12345");
+}
+
 
 TEST_CASE("String with escape characters", "[lexer][string]")
 {
@@ -665,4 +700,3 @@ TEST_CASE("Lexer handles CRLF line endings", "[lexer][crlf]") {
 
     REQUIRE(foundB); 
 }
-
