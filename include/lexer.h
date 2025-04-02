@@ -73,10 +73,8 @@ class Lexer
     std::istream& input;
     int line;
     int column;
-    int currentChar;
-    bool hasPeeked;
+    char currentChar;
 
-    char peek();
     char get();
     void skipWhitespaceAndComments();
     Token scanToken();
