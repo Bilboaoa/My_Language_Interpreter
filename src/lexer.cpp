@@ -1,8 +1,8 @@
-#include "lexer.hpp"
-
 #include <cctype>
 #include <unordered_map>
 #include <cmath>
+
+#include "lexer.hpp"
 
 const std::unordered_map<std::string, TokenType> keywords = {
     {"int", TokenType::Type},      {"float", TokenType::Type},  {"string", TokenType::Type},
@@ -18,7 +18,7 @@ Lexer::Lexer(std::istream& inputStream)
 
 int Lexer::digit_to_int(char digit) const
 {
-    return static_cast<int>((digit) - '0');
+    return static_cast<int>((digit) - ASCII_ZERO);
 }
 
 char Lexer::get()
@@ -100,7 +100,7 @@ Token Lexer::scanToken()
         int fracDigits = 0;
         int fracPart = 0;
         while (std::isdigit(currentChar)) {
-            fracPart = fracPart * 10 + (currentChar - '0');
+            fracPart = fracPart * 10 + digit_to_int(currentChar);
             fracDigits++;
             get();
         }

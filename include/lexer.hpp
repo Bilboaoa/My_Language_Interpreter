@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+
 #include "token.hpp"
 
 class Lexer
@@ -12,7 +13,7 @@ class Lexer
 
    private:
     static constexpr int MAXINT = std::numeric_limits<int>::max();
-    static constexpr int ASCII_ZERO = (int)0;
+    static constexpr int ASCII_ZERO = (int)'0';
 
     std::istream& input;
     int line;
