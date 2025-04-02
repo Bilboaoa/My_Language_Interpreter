@@ -1,6 +1,7 @@
 #include "lexer.h"
 #include <cctype>
 #include <unordered_map>
+#include <cmath>
 
 const std::unordered_map<std::string, TokenType> keywords = {
     {"int", TokenType::Type},      {"float", TokenType::Type},  {"string", TokenType::Type},
@@ -12,6 +13,11 @@ Lexer::Lexer(std::istream& inputStream)
     : input(inputStream), line(1), column(0), currentChar()
 {
     get();
+}
+
+int Lexer::digit_to_int(char digit) const
+{
+    return static_cast<int>((digit) - '0');
 }
 
 char Lexer::get()
@@ -74,24 +80,33 @@ Token Lexer::scanToken()
 
     if (std::isdigit(currentChar))
     {
-        std::string number;
+        int intPart = 0;
         while (std::isdigit(currentChar)) 
         {
-            number += currentChar;
+            int currentDigit = digit_to_int(currentChar);
+            if ((MAXINT - currentDigit)/10 >= intPart)
+            {
+                intPart *= 10;
+                intPart += currentDigit;
+            }
             get();
         }
-        if (currentChar == '.')
+        if (currentChar != '.')
         {
-            number += currentChar;
+            return Token(TokenType::Number, intPart, tokenStartLine, tokenStartCol);
+        }
+        get();
+        int fracDigits = 0;
+        int fracPart = 0;
+        while (std::isdigit(currentChar)) {
+            fracPart = fracPart * 10 + (currentChar - '0');
+            fracDigits++;
             get();
-            while (std::isdigit(currentChar)) 
-            {
-                number += currentChar;
-                get();
-            }
         }
 
-        return Token(TokenType::Number, number, tokenStartLine, tokenStartCol);
+        float divisor = std::pow(10.0f, fracDigits);
+        float finalValue = static_cast<float>(intPart) + (fracPart / divisor);
+        return Token(TokenType::Number, finalValue, tokenStartLine, tokenStartCol);
     }
 
     if (currentChar == '"')

@@ -3,6 +3,12 @@
 #include <sstream>
 #include "lexer.h"
 
+template <typename T>
+T get_value(const Token& token)
+{
+    return std::get<T>(token.value.value());
+}
+
 TEST_CASE("Identifier parsing", "[lexer][identifier]")
 {
     std::istringstream input("alpha _temp1 x2 alpha_temp1;");
@@ -10,13 +16,13 @@ TEST_CASE("Identifier parsing", "[lexer][identifier]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[0].type == TokenType::Identifier);
-    REQUIRE(tokens[0].value == "alpha");
+    REQUIRE(tokens[0].getValue<std::string>() == "alpha");
     REQUIRE(tokens[1].type == TokenType::Identifier);
-    REQUIRE(tokens[1].value == "_temp1");
+    REQUIRE(tokens[1].getValue<std::string>() == "_temp1");
     REQUIRE(tokens[2].type == TokenType::Identifier);
-    REQUIRE(tokens[2].value == "x2");
+    REQUIRE(tokens[2].getValue<std::string>() == "x2");
     REQUIRE(tokens[3].type == TokenType::Identifier);
-    REQUIRE(tokens[3].value == "alpha_temp1");
+    REQUIRE(tokens[3].getValue<std::string>() == "alpha_temp1");
 }
 
 TEST_CASE("Invalid identifier parsing", "[lexer][identifier]")
@@ -26,9 +32,9 @@ TEST_CASE("Invalid identifier parsing", "[lexer][identifier]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[0].type == TokenType::Number);
-    REQUIRE(tokens[0].value == "123");
+    REQUIRE(tokens[0].getValue<int>() == 123);
     REQUIRE(tokens[1].type == TokenType::Identifier);
-    REQUIRE(tokens[1].value == "xdd");
+    REQUIRE(tokens[1].getValue<std::string>() == "xdd");
 }
 
 TEST_CASE("Identifier parsing with keyword", "[lexer][identifier]")
@@ -38,11 +44,11 @@ TEST_CASE("Identifier parsing with keyword", "[lexer][identifier]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[0].type == TokenType::Identifier);
-    REQUIRE(tokens[0].value == "var_a");
+    REQUIRE(tokens[0].getValue<std::string>() == "var_a");
     REQUIRE(tokens[1].type == TokenType::Identifier);
-    REQUIRE(tokens[1].value == "fun_a");
+    REQUIRE(tokens[1].getValue<std::string>() == "fun_a");
     REQUIRE(tokens[2].type == TokenType::Identifier);
-    REQUIRE(tokens[2].value == "if_a");
+    REQUIRE(tokens[2].getValue<std::string>() == "if_a");
 }
 
 TEST_CASE("Number parsing (int)", "[lexer][number]")
@@ -52,7 +58,7 @@ TEST_CASE("Number parsing (int)", "[lexer][number]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[0].type == TokenType::Number);
-    REQUIRE(tokens[0].value == "123");
+    REQUIRE(tokens[0].getValue<int>() == 123);
 }
 
 TEST_CASE("Number parsing (float)", "[lexer][number]")
@@ -62,7 +68,7 @@ TEST_CASE("Number parsing (float)", "[lexer][number]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[0].type == TokenType::Number);
-    REQUIRE(tokens[0].value == "45.67");
+    REQUIRE(tokens[0].getValue<float>() == 45.67f);
 }
 
 TEST_CASE("String parsing", "[lexer][string]")
@@ -72,17 +78,17 @@ TEST_CASE("String parsing", "[lexer][string]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[0].type == TokenType::StringLiteral);
-    REQUIRE(tokens[0].value == "Hi");
+    REQUIRE(std::get<std::string>(tokens[0].value.value()) == "Hi");
 }
 
 TEST_CASE("String with escape characters", "[lexer][string]")
 {
-    std::istringstream input("var s = \"\\\"quoted\\\" and \\\\slash\";");
+    std::istringstream input(R"(var s = "\"quoted\" and \\slash";)");
     Lexer lexer(input);
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[3].type == TokenType::StringLiteral);
-    REQUIRE(tokens[3].value == "\"quoted\" and \\slash");
+    REQUIRE(std::get<std::string>(tokens[3].value.value()) == "\"quoted\" and \\slash");
 }
 
 TEST_CASE("Simple variable declaration", "[lexer][keyword]")
@@ -93,10 +99,10 @@ TEST_CASE("Simple variable declaration", "[lexer][keyword]")
 
     REQUIRE(tokens[0].type == TokenType::Var);
     REQUIRE(tokens[1].type == TokenType::Identifier);
-    REQUIRE(tokens[1].value == "x");
+    REQUIRE(tokens[1].getValue<std::string>() == "x");
     REQUIRE(tokens[2].type == TokenType::Assign);
     REQUIRE(tokens[3].type == TokenType::Number);
-    REQUIRE(tokens[3].value == "42");
+    REQUIRE(tokens[3].getValue<int>() == 42);
     REQUIRE(tokens[4].type == TokenType::Semicolon);
     REQUIRE(tokens[5].type == TokenType::EndOfFile);
 }
@@ -108,7 +114,7 @@ TEST_CASE("String literal parsing", "[lexer][keyword]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[3].type == TokenType::StringLiteral);
-    REQUIRE(tokens[3].value == "Hello\nWorld");
+    REQUIRE(tokens[3].getValue<std::string>() == "Hello\nWorld");
 }
 
 TEST_CASE("Type keywords recognized as TokenType::Type", "[lexer][type]")
@@ -118,11 +124,11 @@ TEST_CASE("Type keywords recognized as TokenType::Type", "[lexer][type]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[0].type == TokenType::Type);
-    REQUIRE(tokens[0].value == "int");
+    REQUIRE(tokens[0].getValue<std::string>() == "int");
     REQUIRE(tokens[1].type == TokenType::Type);
-    REQUIRE(tokens[1].value == "float");
+    REQUIRE(tokens[1].getValue<std::string>() == "float");
     REQUIRE(tokens[2].type == TokenType::Type);
-    REQUIRE(tokens[2].value == "string");
+    REQUIRE(tokens[2].getValue<std::string>() == "string");
 }
 
 TEST_CASE("Constant variable declaration", "[lexer][keyword]")
@@ -132,7 +138,7 @@ TEST_CASE("Constant variable declaration", "[lexer][keyword]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[0].type == TokenType::Const);
-    REQUIRE(tokens[0].value == "const");
+    REQUIRE(tokens[0].getValue<std::string>() == "const");
     REQUIRE(tokens[1].type == TokenType::Var);
 }
 
@@ -143,18 +149,18 @@ TEST_CASE("Function declaration", "[lexer][keyword]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[0].type == TokenType::Fun);
-    REQUIRE(tokens[0].value == "fun");
+    REQUIRE(tokens[0].getValue<std::string>() == "fun");
     REQUIRE(tokens[1].type == TokenType::Identifier);
-    REQUIRE(tokens[1].value == "abc");
+    REQUIRE(tokens[1].getValue<std::string>() == "abc");
     REQUIRE(tokens[2].type == TokenType::LParen);
     REQUIRE(tokens[3].type == TokenType::Var);
     REQUIRE(tokens[4].type == TokenType::Identifier);
-    REQUIRE(tokens[4].value == "a");
+    REQUIRE(tokens[4].getValue<std::string>() == "a");
     REQUIRE(tokens[5].type == TokenType::RParen);
     REQUIRE(tokens[6].type == TokenType::LBracket);
     REQUIRE(tokens[7].type == TokenType::Return);
     REQUIRE(tokens[8].type == TokenType::Identifier);
-    REQUIRE(tokens[8].value == "a");
+    REQUIRE(tokens[8].getValue<std::string>() == "a");
     REQUIRE(tokens[9].type == TokenType::Semicolon);
     REQUIRE(tokens[10].type == TokenType::RBracket);
 }
@@ -166,13 +172,13 @@ TEST_CASE("Embeded function declaration", "[lexer][keyword]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[0].type == TokenType::Fun);
-    REQUIRE(tokens[0].value == "fun");
+    REQUIRE(tokens[0].getValue<std::string>() == "fun");
     REQUIRE(tokens[1].type == TokenType::Identifier);
-    REQUIRE(tokens[1].value == "abc");
+    REQUIRE(tokens[1].getValue<std::string>() == "abc");
     REQUIRE(tokens[2].type == TokenType::LParen);
     REQUIRE(tokens[3].type == TokenType::Var);
     REQUIRE(tokens[4].type == TokenType::Identifier);
-    REQUIRE(tokens[4].value == "a");
+    REQUIRE(tokens[4].getValue<std::string>() == "a");
     REQUIRE(tokens[5].type == TokenType::RParen);
     REQUIRE(tokens[6].type == TokenType::LBracket);
     REQUIRE(tokens[7].type == TokenType::Return);
@@ -183,7 +189,7 @@ TEST_CASE("Embeded function declaration", "[lexer][keyword]")
     REQUIRE(tokens[12].type == TokenType::LBracket);
     REQUIRE(tokens[13].type == TokenType::Return);
     REQUIRE(tokens[14].type == TokenType::Identifier);
-    REQUIRE(tokens[14].value == "a");
+    REQUIRE(tokens[14].getValue<std::string>() == "a");
     REQUIRE(tokens[15].type == TokenType::Plus);
     REQUIRE(tokens[16].type == TokenType::Number);
     REQUIRE(tokens[17].type == TokenType::Semicolon);
@@ -201,10 +207,10 @@ TEST_CASE("Basic if statement", "[lexer][keyword]")
     REQUIRE(tokens[0].type == TokenType::If);
     REQUIRE(tokens[1].type == TokenType::LParen);
     REQUIRE(tokens[2].type == TokenType::Identifier);
-    REQUIRE(tokens[2].value == "a");
+    REQUIRE(tokens[2].getValue<std::string>() == "a");
     REQUIRE(tokens[3].type == TokenType::Greater);
     REQUIRE(tokens[4].type == TokenType::Identifier);
-    REQUIRE(tokens[4].value == "b");
+    REQUIRE(tokens[4].getValue<std::string>() == "b");
     REQUIRE(tokens[5].type == TokenType::RParen);
 }
 
@@ -224,22 +230,22 @@ TEST_CASE("Basic if else statement", "[lexer][keyword]")
     REQUIRE(tokens[0].type == TokenType::If);
     REQUIRE(tokens[1].type == TokenType::LParen);
     REQUIRE(tokens[2].type == TokenType::Identifier);
-    REQUIRE(tokens[2].value == "a");
+    REQUIRE(tokens[2].getValue<std::string>() == "a");
     REQUIRE(tokens[3].type == TokenType::Greater);
     REQUIRE(tokens[4].type == TokenType::Identifier);
-    REQUIRE(tokens[4].value == "b");
+    REQUIRE(tokens[4].getValue<std::string>() == "b");
     REQUIRE(tokens[5].type == TokenType::RParen);
     REQUIRE(tokens[6].type == TokenType::LBracket);
     REQUIRE(tokens[7].type == TokenType::Return);
     REQUIRE(tokens[8].type == TokenType::Number);
-    REQUIRE(tokens[8].value == "0");
+    REQUIRE(tokens[8].getValue<int>() == 0);
     REQUIRE(tokens[9].type == TokenType::Semicolon);
     REQUIRE(tokens[10].type == TokenType::RBracket);
     REQUIRE(tokens[11].type == TokenType::Else);
     REQUIRE(tokens[12].type == TokenType::LBracket);
     REQUIRE(tokens[13].type == TokenType::Return);
     REQUIRE(tokens[14].type == TokenType::Number);
-    REQUIRE(tokens[14].value == "1");
+    REQUIRE(tokens[14].getValue<int>() == 1);
     REQUIRE(tokens[15].type == TokenType::Semicolon);
     REQUIRE(tokens[16].type == TokenType::RBracket);
 }
@@ -257,10 +263,10 @@ TEST_CASE("Basic while statement", "[lexer][keyword]")
     REQUIRE(tokens[0].type == TokenType::While);
     REQUIRE(tokens[1].type == TokenType::LParen);
     REQUIRE(tokens[2].type == TokenType::Identifier);
-    REQUIRE(tokens[2].value == "a");
+    REQUIRE(tokens[2].getValue<std::string>() == "a");
     REQUIRE(tokens[3].type == TokenType::GreaterEqual);
     REQUIRE(tokens[4].type == TokenType::Identifier);
-    REQUIRE(tokens[4].value == "b");
+    REQUIRE(tokens[4].getValue<std::string>() == "b");
     REQUIRE(tokens[5].type == TokenType::RParen);
     REQUIRE(tokens[6].type == TokenType::LBracket);
     REQUIRE(tokens[7].type == TokenType::Identifier);
@@ -279,7 +285,7 @@ TEST_CASE("Basic as statement", "[lexer][keyword]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[0].type == TokenType::Identifier);
-    REQUIRE(tokens[0].value == "my_var");
+    REQUIRE(tokens[0].getValue<std::string>() == "my_var");
     REQUIRE(tokens[1].type == TokenType::As);
     REQUIRE(tokens[2].type == TokenType::Type);
     REQUIRE(tokens[3].type == TokenType::Semicolon);
@@ -294,7 +300,7 @@ TEST_CASE("Basic print", "[lexer][keyword]")
     REQUIRE(tokens[0].type == TokenType::Print);
     REQUIRE(tokens[1].type == TokenType::LParen);
     REQUIRE(tokens[2].type == TokenType::StringLiteral);
-    REQUIRE(tokens[2].value == "Hello World");
+    REQUIRE(tokens[2].getValue<std::string>() == "Hello World");
     REQUIRE(tokens[3].type == TokenType::RParen);
     REQUIRE(tokens[4].type == TokenType::Semicolon);
 }
@@ -438,10 +444,10 @@ TEST_CASE("Operator AtAt", "[lexer][operators]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[0].type == TokenType::Identifier);
-    REQUIRE(tokens[0].value == "f");
+    REQUIRE(tokens[0].getValue<std::string>() == "f");
     REQUIRE(tokens[1].type == TokenType::AtAt);
     REQUIRE(tokens[2].type == TokenType::Identifier);
-    REQUIRE(tokens[2].value == "g");
+    REQUIRE(tokens[2].getValue<std::string>() == "g");
     REQUIRE(tokens[3].type == TokenType::Semicolon);
 }
 
@@ -452,10 +458,10 @@ TEST_CASE("Operator Pipe", "[lexer][operators]")
     auto tokens = lexer.tokenize();
 
     REQUIRE(tokens[0].type == TokenType::Identifier);
-    REQUIRE(tokens[0].value == "f");
+    REQUIRE(tokens[0].getValue<std::string>() == "f");
     REQUIRE(tokens[1].type == TokenType::Pipe);
     REQUIRE(tokens[2].type == TokenType::Identifier);
-    REQUIRE(tokens[2].value == "g");
+    REQUIRE(tokens[2].getValue<std::string>() == "g");
     REQUIRE(tokens[3].type == TokenType::Semicolon);
 }
 
@@ -548,7 +554,7 @@ TEST_CASE("Unknown character handling", "[lexer][error]")
     bool foundUnknown = false;
     for (const auto& token : tokens)
     {
-        if (token.type == TokenType::Unknown && token.value == "#")
+        if (token.type == TokenType::Unknown && token.getValue<std::string>() == "#")
         {
             foundUnknown = true;
             break;
