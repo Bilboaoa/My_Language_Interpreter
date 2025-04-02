@@ -1,6 +1,6 @@
 #include <fstream>
 #include <iostream>
-#include "lexer.h"
+#include "lexer.hpp"
 
 int main(int argc, char** argv)
 {

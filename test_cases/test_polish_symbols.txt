@@ -1,0 +1,8 @@
+fun my_fun(var a) [
+    return "Cześć" + a;
+]
+
+fun main()
+[
+    print(my_fun("Krzyś"));
+]

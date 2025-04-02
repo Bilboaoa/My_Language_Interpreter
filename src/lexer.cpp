@@ -1,4 +1,5 @@
-#include "lexer.h"
+#include "lexer.hpp"
+
 #include <cctype>
 #include <unordered_map>
 #include <cmath>

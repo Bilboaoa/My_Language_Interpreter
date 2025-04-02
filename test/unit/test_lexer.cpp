@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch_all.hpp>
 #include <sstream>
-#include "lexer.h"
+#include "lexer.hpp"
 
 template <typename T>
 T get_value(const Token& token)
