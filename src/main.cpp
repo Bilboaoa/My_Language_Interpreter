@@ -1,7 +1,6 @@
 #include <fstream>
 #include <iostream>
 #include "lexer.hpp"
-#include "char_stream.hpp"
 
 int main(int argc, char** argv)
 {
@@ -17,8 +16,7 @@ int main(int argc, char** argv)
         std::cerr << "Failed to open file\n";
         return 1;
     }
-    CharStream stream(file);
-    Lexer lexer(stream);
+    Lexer lexer(file);
     std::vector<Token> tokens;
     Token token = lexer.scanToken();
 

@@ -1,7 +1,6 @@
 add_executable(unit_tests
     test_lexer.cpp
     ../../src/lexer.cpp
-    ../../src/char_stream.cpp
 )
 
 target_include_directories(unit_tests PRIVATE

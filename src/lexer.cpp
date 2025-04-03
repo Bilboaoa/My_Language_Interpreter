@@ -10,7 +10,7 @@ const std::unordered_map<std::string, TokenType> keywords = {
     {"return", TokenType::Return}, {"if", TokenType::If},       {"else", TokenType::Else},
     {"while", TokenType::While},   {"as", TokenType::As},       {"print", TokenType::Print}};
 
-Lexer::Lexer(CharStream& inputStream)
+Lexer::Lexer(std::istream& inputStream)
     : input(inputStream), line(1), column(0), currentChar()
 {
     get();
