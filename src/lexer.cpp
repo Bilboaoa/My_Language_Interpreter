@@ -104,6 +104,7 @@ Token Lexer::scanToken()
             fracDigits++;
             get();
         }
+        // sprawdzic czy jest kropka i zwrocic blad
 
         float divisor = std::pow(10.0f, fracDigits);
         float finalValue = static_cast<float>(intPart) + (fracPart / divisor);
@@ -151,7 +152,7 @@ Token Lexer::scanToken()
         if (currentChar == '"') get();
         return Token(TokenType::StringLiteral, strLiteral, tokenStartLine, tokenStartCol);
     }
-
+    
     switch (currentChar)
     {
         case '+':
@@ -244,19 +245,4 @@ Token Lexer::scanToken()
     char unexpected = currentChar;
     get();
     return Token(TokenType::Unknown, std::string(1, unexpected), tokenStartLine, tokenStartCol);
-}
-
-std::vector<Token> Lexer::tokenize()
-{
-    std::vector<Token> tokens;
-    Token token = scanToken();
-
-    while (token.type != TokenType::EndOfFile)
-    {
-        tokens.push_back(token);
-        token = scanToken();
-    }
-
-    tokens.push_back(token);
-    return tokens;
 }

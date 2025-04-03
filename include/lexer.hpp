@@ -10,7 +10,7 @@ class Lexer
 {
    public:
     explicit Lexer(CharStream& inputStream);
-    std::vector<Token> tokenize();
+    Token scanToken();
 
    private:
     static constexpr int MAXINT = std::numeric_limits<int>::max();
@@ -24,5 +24,4 @@ class Lexer
     int digit_to_int(char digit) const;
     char get();
     void skipWhitespaceAndComments();
-    Token scanToken();
 };

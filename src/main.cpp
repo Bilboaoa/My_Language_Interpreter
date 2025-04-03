@@ -19,7 +19,16 @@ int main(int argc, char** argv)
     }
     CharStream stream(file);
     Lexer lexer(stream);
-    auto tokens = lexer.tokenize();
+    std::vector<Token> tokens;
+    Token token = lexer.scanToken();
+
+    while (token.type != TokenType::EndOfFile)
+    {
+        tokens.push_back(token);
+        token = lexer.scanToken();
+    }
+
+    tokens.push_back(token);
 
     for (const auto& t : tokens)
     {
