@@ -18,8 +18,6 @@ std::vector<Token> tokenize(Lexer* lexer)
     return tokens;
 }
 
-#include <sstream>
-
 TEST_CASE("Identifier parsing", "[lexer][identifier]")
 {
     std::istringstream input("alpha _temp1 x2 alpha_temp1;");

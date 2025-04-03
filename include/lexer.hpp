@@ -23,4 +23,5 @@ class Lexer
     int digit_to_int(char digit) const;
     char get();
     void skipWhitespaceAndComments();
+    Token consumeAndReturn(Token returned);
 };
