@@ -49,6 +49,25 @@ TEST_CASE("Invalid identifier parsing", "[lexer][identifier]")
     REQUIRE(tokens[1].getValue<std::string>() == "xdd");
 }
 
+TEST_CASE("Too long identifier parsing", "[lexer][identifier]")
+{
+    std::string identifier = "";
+    for (int i = 0; i < 50; ++i)
+        identifier+='a';
+    std::istringstream input(identifier);
+    Lexer lexer(input);
+
+    try {
+        auto tokens = tokenize(&lexer);
+        FAIL("Expected InterpreterException not thrown");
+    } catch (const InterpreterException& ex) {
+        REQUIRE(ex.error.type == ErrorType::Lexical);
+        REQUIRE(ex.error.message == "Identifier is too long");
+        REQUIRE(ex.error.line == 1); 
+        REQUIRE(ex.error.column == 1); 
+    }
+}
+
 TEST_CASE("Identifier parsing with keyword", "[lexer][identifier]")
 {
     std::istringstream input("var_a fun_a if_a");

@@ -69,19 +69,30 @@ std::optional<Token> Lexer::tryBuildIdentifier()
 {
     if (!std::isalpha(currentChar) && currentChar != '_') return std::nullopt;
 
-    int startLine = line, startCol = column;
+    int tokenStartLine = line, tokenStartCol = column;
     std::string ident;
+    int currentLen = 0;
 
     while (std::isalnum(currentChar) || currentChar == '_') {
         ident += currentChar;
         get();
+        if (++currentLen >= MAX_IDENTIFIER_LEN)
+        {
+            Error err = {
+                ErrorType::Lexical,
+                "Identifier is too long",
+                tokenStartLine,
+                tokenStartCol
+                };
+                throw InterpreterException(err);
+        }
     }
 
-    if (keywords.count(ident)) {
-        return Token(keywords.at(ident), ident, startLine, startCol);
+        if (keywords.count(ident)) {
+            return Token(keywords.at(ident), ident, tokenStartLine, tokenStartCol);
     }
 
-    return Token(TokenType::Identifier, ident, startLine, startCol);
+    return Token(TokenType::Identifier, ident, tokenStartLine, tokenStartCol);
 }
 
 std::optional<Token> Lexer::tryBuildNumber()
@@ -120,7 +131,7 @@ std::optional<Token> Lexer::tryBuildNumber()
         tokenStartLine,
         tokenStartCol
         };
-        throw InterpreterException(err);     
+        throw InterpreterException(err);
     }
     float divisor = std::pow(10.0f, fracDigits);
     float finalValue = static_cast<float>(intPart) + (fracPart / divisor);
@@ -131,7 +142,7 @@ std::optional<Token> Lexer::tryBuildString()
 {
     if (currentChar != '"')  return std::nullopt;
     int tokenStartLine = line, tokenStartCol = column;
-
+    
     get();
     std::string strLiteral;
     while (currentChar != '"' && currentChar != EOF)

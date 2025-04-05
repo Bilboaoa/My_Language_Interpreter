@@ -14,6 +14,7 @@ class Lexer
    private:
     static constexpr int MAXINT = std::numeric_limits<int>::max();
     static constexpr int ASCII_ZERO = (int)'0';
+    static constexpr int MAX_IDENTIFIER_LEN = 50;
 
     std::istream& input;
     int line;
