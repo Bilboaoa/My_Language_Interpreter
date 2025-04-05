@@ -2,7 +2,6 @@
 #include <variant>
 #include <optional>
 
-
 enum class TokenType
 {
     Identifier,
@@ -58,18 +57,25 @@ struct Token
     int column;
 
     Token(TokenType type, int line, int column)
-        : type(type), value(std::nullopt), line(line), column(column) {}
+        : type(type), value(std::nullopt), line(line), column(column)
+    {
+    }
     Token(TokenType t, const std::string& v, int l, int c) : type(t), value(v), line(l), column(c)
     {
     }
     Token(TokenType type, int val, int line, int column)
-        : type(type), value(val), line(line), column(column) {}
+        : type(type), value(val), line(line), column(column)
+    {
+    }
 
     Token(TokenType type, float val, int line, int column)
-        : type(type), value(val), line(line), column(column) {}
+        : type(type), value(val), line(line), column(column)
+    {
+    }
 
     template <typename T>
-    T getValue() const {
+    T getValue() const
+    {
         return std::get<T>(value.value());
     }
 };

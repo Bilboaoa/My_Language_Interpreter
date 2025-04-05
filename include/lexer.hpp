@@ -6,7 +6,6 @@
 #include "token.hpp"
 #include "error_module.hpp"
 
-
 class Lexer
 {
    public:
@@ -27,7 +26,8 @@ class Lexer
     char get();
     void skipWhitespaceAndComments();
     Token consumeAndReturn(Token returned);
-    void throwError(ErrorType type, const std::string& msg, int tokenStartLine, int tokenStartCol) const;
+    void throwError(ErrorType type, const std::string& msg, int tokenStartLine,
+                    int tokenStartCol) const;
 
     std::optional<Token> tryBuildIdentifier();
     std::optional<Token> tryBuildNumber();

@@ -52,19 +52,21 @@ TEST_CASE("Invalid identifier parsing", "[lexer][identifier]")
 TEST_CASE("Too long identifier parsing", "[lexer][identifier]")
 {
     std::string identifier = "";
-    for (int i = 0; i < 50; ++i)
-        identifier+='a';
+    for (int i = 0; i < 50; ++i) identifier += 'a';
     std::istringstream input(identifier);
     Lexer lexer(input);
 
-    try {
+    try
+    {
         auto tokens = tokenize(&lexer);
         FAIL("Expected InterpreterException not thrown");
-    } catch (const InterpreterException& ex) {
+    }
+    catch (const InterpreterException& ex)
+    {
         REQUIRE(ex.error.type == ErrorType::Lexical);
         REQUIRE(ex.error.message == "Identifier is too long");
-        REQUIRE(ex.error.line == 1); 
-        REQUIRE(ex.error.column == 1); 
+        REQUIRE(ex.error.line == 1);
+        REQUIRE(ex.error.column == 1);
     }
 }
 
@@ -105,7 +107,6 @@ TEST_CASE("Number parsing out for range (int)", "[lexer][number]")
     REQUIRE(tokens[0].getValue<int>() == 214748365);
 }
 
-
 TEST_CASE("Number parsing (float)", "[lexer][number]")
 {
     std::istringstream input("45.67;");
@@ -122,14 +123,17 @@ TEST_CASE("Number parsing with doubled dot", "[lexer][number]")
     std::istringstream input("45.67.;");
     Lexer lexer(input);
 
-    try {
+    try
+    {
         auto tokens = tokenize(&lexer);
         FAIL("Expected InterpreterException not thrown");
-    } catch (const InterpreterException& ex) {
+    }
+    catch (const InterpreterException& ex)
+    {
         REQUIRE(ex.error.type == ErrorType::Syntax);
         REQUIRE(ex.error.message == "Invalid float");
-        REQUIRE(ex.error.line == 1); 
-        REQUIRE(ex.error.column == 1); 
+        REQUIRE(ex.error.line == 1);
+        REQUIRE(ex.error.column == 1);
     }
 }
 
@@ -160,17 +164,19 @@ TEST_CASE("String parsing no end quote", "[lexer][string]")
     std::istringstream input("\"12345");
     Lexer lexer(input);
 
-    try {
+    try
+    {
         auto tokens = tokenize(&lexer);
         FAIL("Expected InterpreterException not thrown");
-    } catch (const InterpreterException& ex) {
+    }
+    catch (const InterpreterException& ex)
+    {
         REQUIRE(ex.error.type == ErrorType::Lexical);
         REQUIRE(ex.error.message == "Unterminated string literal");
-        REQUIRE(ex.error.line == 1); 
-        REQUIRE(ex.error.column == 1); 
+        REQUIRE(ex.error.line == 1);
+        REQUIRE(ex.error.column == 1);
     }
 }
-
 
 TEST_CASE("String with escape characters", "[lexer][string]")
 {
@@ -194,7 +200,8 @@ TEST_CASE("Variable keyword", "[lexer][keyword]")
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Keyword: const", "[lexer][keyword]") {
+TEST_CASE("Keyword: const", "[lexer][keyword]")
+{
     std::istringstream input("const");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -203,7 +210,8 @@ TEST_CASE("Keyword: const", "[lexer][keyword]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Keyword: fun", "[lexer][keyword]") {
+TEST_CASE("Keyword: fun", "[lexer][keyword]")
+{
     std::istringstream input("fun");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -212,7 +220,8 @@ TEST_CASE("Keyword: fun", "[lexer][keyword]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Keyword: return", "[lexer][keyword]") {
+TEST_CASE("Keyword: return", "[lexer][keyword]")
+{
     std::istringstream input("return");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -221,7 +230,8 @@ TEST_CASE("Keyword: return", "[lexer][keyword]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Keyword: if", "[lexer][keyword]") {
+TEST_CASE("Keyword: if", "[lexer][keyword]")
+{
     std::istringstream input("if");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -230,7 +240,8 @@ TEST_CASE("Keyword: if", "[lexer][keyword]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Keyword: else", "[lexer][keyword]") {
+TEST_CASE("Keyword: else", "[lexer][keyword]")
+{
     std::istringstream input("else");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -239,7 +250,8 @@ TEST_CASE("Keyword: else", "[lexer][keyword]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Keyword: while", "[lexer][keyword]") {
+TEST_CASE("Keyword: while", "[lexer][keyword]")
+{
     std::istringstream input("while");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -248,7 +260,8 @@ TEST_CASE("Keyword: while", "[lexer][keyword]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Keyword: as", "[lexer][keyword]") {
+TEST_CASE("Keyword: as", "[lexer][keyword]")
+{
     std::istringstream input("as");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -257,7 +270,8 @@ TEST_CASE("Keyword: as", "[lexer][keyword]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Keyword: print", "[lexer][keyword]") {
+TEST_CASE("Keyword: print", "[lexer][keyword]")
+{
     std::istringstream input("print");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -266,7 +280,8 @@ TEST_CASE("Keyword: print", "[lexer][keyword]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: +", "[lexer][keyword]") {
+TEST_CASE("Operator: +", "[lexer][keyword]")
+{
     std::istringstream input("+");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -275,7 +290,8 @@ TEST_CASE("Operator: +", "[lexer][keyword]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: -", "[lexer][keyword]") {
+TEST_CASE("Operator: -", "[lexer][keyword]")
+{
     std::istringstream input("-");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -284,7 +300,8 @@ TEST_CASE("Operator: -", "[lexer][keyword]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: *", "[lexer][keyword]") {
+TEST_CASE("Operator: *", "[lexer][keyword]")
+{
     std::istringstream input("*");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -293,7 +310,8 @@ TEST_CASE("Operator: *", "[lexer][keyword]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: /", "[lexer][keyword]") {
+TEST_CASE("Operator: /", "[lexer][keyword]")
+{
     std::istringstream input("/");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -302,7 +320,8 @@ TEST_CASE("Operator: /", "[lexer][keyword]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: ==", "[lexer][keyword]") {
+TEST_CASE("Operator: ==", "[lexer][keyword]")
+{
     std::istringstream input("==");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -311,7 +330,8 @@ TEST_CASE("Operator: ==", "[lexer][keyword]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: !=", "[lexer][operator]") {
+TEST_CASE("Operator: !=", "[lexer][operator]")
+{
     std::istringstream input("!=");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -320,7 +340,8 @@ TEST_CASE("Operator: !=", "[lexer][operator]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: >", "[lexer][operator]") {
+TEST_CASE("Operator: >", "[lexer][operator]")
+{
     std::istringstream input(">");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -329,7 +350,8 @@ TEST_CASE("Operator: >", "[lexer][operator]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: >=", "[lexer][operator]") {
+TEST_CASE("Operator: >=", "[lexer][operator]")
+{
     std::istringstream input(">=");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -338,7 +360,8 @@ TEST_CASE("Operator: >=", "[lexer][operator]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: <", "[lexer][operator]") {
+TEST_CASE("Operator: <", "[lexer][operator]")
+{
     std::istringstream input("<");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -347,7 +370,8 @@ TEST_CASE("Operator: <", "[lexer][operator]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: <=", "[lexer][operator]") {
+TEST_CASE("Operator: <=", "[lexer][operator]")
+{
     std::istringstream input("<=");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -356,7 +380,8 @@ TEST_CASE("Operator: <=", "[lexer][operator]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: |", "[lexer][operator]") {
+TEST_CASE("Operator: |", "[lexer][operator]")
+{
     std::istringstream input("|");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -365,7 +390,8 @@ TEST_CASE("Operator: |", "[lexer][operator]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: @@", "[lexer][operator]") {
+TEST_CASE("Operator: @@", "[lexer][operator]")
+{
     std::istringstream input("@@");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -374,7 +400,8 @@ TEST_CASE("Operator: @@", "[lexer][operator]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: =", "[lexer][operator]") {
+TEST_CASE("Operator: =", "[lexer][operator]")
+{
     std::istringstream input("=");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -383,7 +410,8 @@ TEST_CASE("Operator: =", "[lexer][operator]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: &&", "[lexer][operator]") {
+TEST_CASE("Operator: &&", "[lexer][operator]")
+{
     std::istringstream input("&&");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -392,7 +420,8 @@ TEST_CASE("Operator: &&", "[lexer][operator]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Operator: ||", "[lexer][operator]") {
+TEST_CASE("Operator: ||", "[lexer][operator]")
+{
     std::istringstream input("||");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -401,7 +430,8 @@ TEST_CASE("Operator: ||", "[lexer][operator]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Symbol: (", "[lexer][symbol]") {
+TEST_CASE("Symbol: (", "[lexer][symbol]")
+{
     std::istringstream input("(");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -410,7 +440,8 @@ TEST_CASE("Symbol: (", "[lexer][symbol]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Symbol: )", "[lexer][symbol]") {
+TEST_CASE("Symbol: )", "[lexer][symbol]")
+{
     std::istringstream input(")");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -419,15 +450,18 @@ TEST_CASE("Symbol: )", "[lexer][symbol]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Brackets", "[lexer][symbol]") {
-    SECTION("LBracket") {
+TEST_CASE("Brackets", "[lexer][symbol]")
+{
+    SECTION("LBracket")
+    {
         std::istringstream input("[");
         Lexer lexer(input);
         auto tokens = tokenize(&lexer);
         REQUIRE(tokens[0].type == TokenType::LBracket);
     }
 
-    SECTION("RBracket") {
+    SECTION("RBracket")
+    {
         std::istringstream input("]");
         Lexer lexer(input);
         auto tokens = tokenize(&lexer);
@@ -435,8 +469,8 @@ TEST_CASE("Brackets", "[lexer][symbol]") {
     }
 }
 
-
-TEST_CASE("Symbol: ;", "[lexer][symbol]") {
+TEST_CASE("Symbol: ;", "[lexer][symbol]")
+{
     std::istringstream input(";");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -445,7 +479,8 @@ TEST_CASE("Symbol: ;", "[lexer][symbol]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Symbol: ,", "[lexer][symbol]") {
+TEST_CASE("Symbol: ,", "[lexer][symbol]")
+{
     std::istringstream input(",");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -454,7 +489,8 @@ TEST_CASE("Symbol: ,", "[lexer][symbol]") {
     REQUIRE(!tokens[0].value.has_value());
 }
 
-TEST_CASE("Symbol: EOF", "[lexer][symbol]") {
+TEST_CASE("Symbol: EOF", "[lexer][symbol]")
+{
     std::istringstream input("");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -466,7 +502,8 @@ TEST_CASE("Symbol: EOF", "[lexer][symbol]") {
     REQUIRE(!token.value.has_value());
 }
 
-TEST_CASE("Symbol: Unknown", "[lexer][symbol]") {
+TEST_CASE("Symbol: Unknown", "[lexer][symbol]")
+{
     std::istringstream input(".");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -998,7 +1035,8 @@ TEST_CASE("Whitespace-only input", "[lexer][comments]")
     REQUIRE(tokens[0].type == TokenType::EndOfFile);
 }
 
-TEST_CASE("Lexer handles CRLF line endings", "[lexer][crlf]") {
+TEST_CASE("Lexer handles CRLF line endings", "[lexer][crlf]")
+{
     std::istringstream input("var a = 5;\r\nvar b = 10;\r\n");
     Lexer lexer(input);
     auto tokens = tokenize(&lexer);
@@ -1006,9 +1044,9 @@ TEST_CASE("Lexer handles CRLF line endings", "[lexer][crlf]") {
     REQUIRE(tokens.size() > 0);
 
     bool foundB = false;
-    for (const auto& token : tokens) {
-        if (token.type == TokenType::Identifier &&
-            token.getValue<std::string>() == "b")
+    for (const auto& token : tokens)
+    {
+        if (token.type == TokenType::Identifier && token.getValue<std::string>() == "b")
         {
             foundB = true;
             REQUIRE(token.line == 2);
@@ -1016,5 +1054,5 @@ TEST_CASE("Lexer handles CRLF line endings", "[lexer][crlf]") {
         }
     }
 
-    REQUIRE(foundB); 
+    REQUIRE(foundB);
 }

@@ -4,31 +4,26 @@
 
 #include "lexer.hpp"
 
-
 const std::unordered_map<std::string, TokenType> keywords = {
     {"int", TokenType::Type},      {"float", TokenType::Type},  {"string", TokenType::Type},
     {"var", TokenType::Var},       {"const", TokenType::Const}, {"fun", TokenType::Fun},
     {"return", TokenType::Return}, {"if", TokenType::If},       {"else", TokenType::Else},
     {"while", TokenType::While},   {"as", TokenType::As},       {"print", TokenType::Print}};
 
-Lexer::Lexer(std::istream& inputStream)
-    : input(inputStream), line(1), column(0), currentChar()
+Lexer::Lexer(std::istream& inputStream) : input(inputStream), line(1), column(0), currentChar()
 {
     get();
 }
 
 int Lexer::digit_to_int(char digit) const
 {
-    return static_cast<int>((digit) - ASCII_ZERO);
+    return static_cast<int>((digit)-ASCII_ZERO);
 }
 
-void Lexer::throwError(ErrorType type, const std::string& msg, int tokenStartLine, int tokenStartCol) const{
-    Error err = {
-    type,
-    msg,
-    tokenStartLine,
-    tokenStartCol
-    };
+void Lexer::throwError(ErrorType type, const std::string& msg, int tokenStartLine,
+                       int tokenStartCol) const
+{
+    Error err = {type, msg, tokenStartLine, tokenStartCol};
     throw InterpreterException(err);
 }
 
@@ -83,15 +78,17 @@ std::optional<Token> Lexer::tryBuildIdentifier()
     std::string ident;
     int currentLen = 0;
 
-    while (std::isalnum(currentChar) || currentChar == '_') {
+    while (std::isalnum(currentChar) || currentChar == '_')
+    {
         ident += currentChar;
         get();
         if (++currentLen >= MAX_IDENTIFIER_LEN)
             throwError(ErrorType::Lexical, "Identifier is too long", tokenStartLine, tokenStartCol);
     }
 
-        if (keywords.count(ident)) {
-            return Token(keywords.at(ident), tokenStartLine, tokenStartCol);
+    if (keywords.count(ident))
+    {
+        return Token(keywords.at(ident), tokenStartLine, tokenStartCol);
     }
 
     return Token(TokenType::Identifier, ident, tokenStartLine, tokenStartCol);
@@ -101,12 +98,12 @@ std::optional<Token> Lexer::tryBuildNumber()
 {
     if (!std::isdigit(currentChar)) return std::nullopt;
     int tokenStartLine = line, tokenStartCol = column;
- 
+
     int intPart = 0;
-    while (std::isdigit(currentChar)) 
+    while (std::isdigit(currentChar))
     {
         int currentDigit = digit_to_int(currentChar);
-        if ((MAXINT - currentDigit)/10 >= intPart)
+        if ((MAXINT - currentDigit) / 10 >= intPart)
         {
             intPart *= 10;
             intPart += currentDigit;
@@ -120,7 +117,8 @@ std::optional<Token> Lexer::tryBuildNumber()
     get();
     int fracDigits = 0;
     int fracPart = 0;
-    while (std::isdigit(currentChar)) {
+    while (std::isdigit(currentChar))
+    {
         fracPart = fracPart * 10 + digit_to_int(currentChar);
         fracDigits++;
         get();
@@ -131,39 +129,37 @@ std::optional<Token> Lexer::tryBuildNumber()
     float divisor = std::pow(10.0f, fracDigits);
     float finalValue = static_cast<float>(intPart) + (fracPart / divisor);
     return Token(TokenType::Number, finalValue, tokenStartLine, tokenStartCol);
-
 }
 std::optional<Token> Lexer::tryBuildString()
 {
-    if (currentChar != '"')  return std::nullopt;
+    if (currentChar != '"') return std::nullopt;
     int tokenStartLine = line, tokenStartCol = column;
-    
+
     get();
     std::string strLiteral;
     while (currentChar != '"' && currentChar != EOF)
     {
         if (currentChar == '\\')
-            {
+        {
             get();
 
-            if (currentChar == EOF) 
-                break;
+            if (currentChar == EOF) break;
             switch (currentChar)
             {
                 case 'n':
-                strLiteral += '\n';
+                    strLiteral += '\n';
                     break;
                 case 't':
-                strLiteral += '\t';
+                    strLiteral += '\t';
                     break;
                 case '"':
-                strLiteral += '"';
+                    strLiteral += '"';
                     break;
                 case '\\':
-                strLiteral += '\\';
+                    strLiteral += '\\';
                     break;
                 default:
-                strLiteral += currentChar;
+                    strLiteral += currentChar;
                     break;
             }
             get();
@@ -174,9 +170,11 @@ std::optional<Token> Lexer::tryBuildString()
             get();
         }
     }
-    if (currentChar == '"') get();
+    if (currentChar == '"')
+        get();
     else if (currentChar == EOF)
-        throwError(ErrorType::Lexical, "Unterminated string literal", tokenStartLine, tokenStartCol);
+        throwError(ErrorType::Lexical, "Unterminated string literal", tokenStartLine,
+                   tokenStartCol);
     return Token(TokenType::StringLiteral, strLiteral, tokenStartLine, tokenStartCol);
 }
 
@@ -186,64 +184,69 @@ std::optional<Token> Lexer::tryBuildSymbol()
 
     switch (currentChar)
     {
-    case '+': return consumeAndReturn(Token(TokenType::Plus, tokenStartLine, tokenStartCol));
-    case '-': return consumeAndReturn(Token(TokenType::Minus, tokenStartLine, tokenStartCol));
-    case '*': return consumeAndReturn(Token(TokenType::Star, tokenStartLine, tokenStartCol));
-    case '/': return consumeAndReturn(Token(TokenType::Slash, tokenStartLine, tokenStartCol));
+        case '+':
+            return consumeAndReturn(Token(TokenType::Plus, tokenStartLine, tokenStartCol));
+        case '-':
+            return consumeAndReturn(Token(TokenType::Minus, tokenStartLine, tokenStartCol));
+        case '*':
+            return consumeAndReturn(Token(TokenType::Star, tokenStartLine, tokenStartCol));
+        case '/':
+            return consumeAndReturn(Token(TokenType::Slash, tokenStartLine, tokenStartCol));
 
-    case '=':
-        get();
-        if (currentChar == '=')
-            return consumeAndReturn(Token(TokenType::Equal, tokenStartLine, tokenStartCol));
-        return Token(TokenType::Assign, tokenStartLine, tokenStartCol);
+        case '=':
+            get();
+            if (currentChar == '=')
+                return consumeAndReturn(Token(TokenType::Equal, tokenStartLine, tokenStartCol));
+            return Token(TokenType::Assign, tokenStartLine, tokenStartCol);
 
-    case '!':
-        get();
-        if (currentChar == '=')
-            return consumeAndReturn(Token(TokenType::NotEqual, tokenStartLine, tokenStartCol));
-        break;
+        case '!':
+            get();
+            if (currentChar == '=')
+                return consumeAndReturn(Token(TokenType::NotEqual, tokenStartLine, tokenStartCol));
+            break;
 
-    case '>':
-        get();
-        if (currentChar == '=')
-            return consumeAndReturn(Token(TokenType::GreaterEqual, tokenStartLine, tokenStartCol));
-        return Token(TokenType::Greater, tokenStartLine, tokenStartCol);
+        case '>':
+            get();
+            if (currentChar == '=')
+                return consumeAndReturn(
+                    Token(TokenType::GreaterEqual, tokenStartLine, tokenStartCol));
+            return Token(TokenType::Greater, tokenStartLine, tokenStartCol);
 
-    case '<':
-        get();
-        if (currentChar == '=')
-            return consumeAndReturn(Token(TokenType::LessEqual, tokenStartLine, tokenStartCol));
-        return Token(TokenType::Less, tokenStartLine, tokenStartCol);
+        case '<':
+            get();
+            if (currentChar == '=')
+                return consumeAndReturn(Token(TokenType::LessEqual, tokenStartLine, tokenStartCol));
+            return Token(TokenType::Less, tokenStartLine, tokenStartCol);
 
-    case '|':
-        get();
-        if (currentChar == '|')
-            return consumeAndReturn(Token(TokenType::Or, tokenStartLine, tokenStartCol));
-        return Token(TokenType::Pipe, tokenStartLine, tokenStartCol);
+        case '|':
+            get();
+            if (currentChar == '|')
+                return consumeAndReturn(Token(TokenType::Or, tokenStartLine, tokenStartCol));
+            return Token(TokenType::Pipe, tokenStartLine, tokenStartCol);
 
-    case '@':
-        get();
-        if (currentChar == '@')
-            return consumeAndReturn(Token(TokenType::AtAt, tokenStartLine, tokenStartCol));
-        break;
+        case '@':
+            get();
+            if (currentChar == '@')
+                return consumeAndReturn(Token(TokenType::AtAt, tokenStartLine, tokenStartCol));
+            break;
 
-    case '(':
-        return consumeAndReturn(Token(TokenType::LParen, tokenStartLine, tokenStartCol));
-    case ')':
-        return consumeAndReturn(Token(TokenType::RParen, tokenStartLine, tokenStartCol));
-    case '[':
-        return consumeAndReturn(Token(TokenType::LBracket, tokenStartLine, tokenStartCol));
-    case ']':
-        return consumeAndReturn(Token(TokenType::RBracket, tokenStartLine, tokenStartCol));
-    case ';':
-        return consumeAndReturn(Token(TokenType::Semicolon, tokenStartLine, tokenStartCol));
-    case ',':
-        return consumeAndReturn(Token(TokenType::Comma, tokenStartLine, tokenStartCol));
-    case '&':
-        get();
-        if (currentChar == '&')
-            return consumeAndReturn(Token(TokenType::And, tokenStartLine, tokenStartCol));
-        break;
+        case '(':
+            return consumeAndReturn(Token(TokenType::LParen, tokenStartLine, tokenStartCol));
+        case ')':
+            return consumeAndReturn(Token(TokenType::RParen, tokenStartLine, tokenStartCol));
+        case '[':
+            return consumeAndReturn(Token(TokenType::LBracket, tokenStartLine, tokenStartCol));
+        case ']':
+            return consumeAndReturn(Token(TokenType::RBracket, tokenStartLine, tokenStartCol));
+        case ';':
+            return consumeAndReturn(Token(TokenType::Semicolon, tokenStartLine, tokenStartCol));
+        case ',':
+            return consumeAndReturn(Token(TokenType::Comma, tokenStartLine, tokenStartCol));
+        case '&':
+            get();
+            if (currentChar == '&')
+                return consumeAndReturn(Token(TokenType::And, tokenStartLine, tokenStartCol));
+            break;
     }
     return std::nullopt;
 }
@@ -251,13 +254,13 @@ std::optional<Token> Lexer::tryBuildSymbol()
 Token Lexer::scanToken()
 {
     skipWhitespaceAndComments();
-    int tokenStartLine = line, tokenStartCol = column; 
+    int tokenStartLine = line, tokenStartCol = column;
     if (currentChar == EOF) return Token(TokenType::EndOfFile, tokenStartLine, tokenStartCol);
 
     if (auto t = tryBuildIdentifier()) return *t;
-    if (auto t = tryBuildNumber())     return *t;
-    if (auto t = tryBuildString())     return *t;
-    if (auto t = tryBuildSymbol())     return *t;
+    if (auto t = tryBuildNumber()) return *t;
+    if (auto t = tryBuildString()) return *t;
+    if (auto t = tryBuildSymbol()) return *t;
 
     char unexpected = currentChar;
     get();
