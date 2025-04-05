@@ -27,7 +27,6 @@ enum class TokenType
     Star,
     Slash,
     Equal,
-    EqualEqual,
     NotEqual,
     Greater,
     GreaterEqual,

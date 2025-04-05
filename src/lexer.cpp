@@ -89,7 +89,7 @@ std::optional<Token> Lexer::tryBuildIdentifier()
     }
 
         if (keywords.count(ident)) {
-            return Token(keywords.at(ident), ident, tokenStartLine, tokenStartCol);
+            return Token(keywords.at(ident), tokenStartLine, tokenStartCol);
     }
 
     return Token(TokenType::Identifier, ident, tokenStartLine, tokenStartCol);
@@ -207,7 +207,7 @@ std::optional<Token> Lexer::tryBuildSymbol()
     case '=':
         get();
         if (currentChar == '=')
-            return consumeAndReturn(Token(TokenType::EqualEqual, tokenStartLine, tokenStartCol));
+            return consumeAndReturn(Token(TokenType::Equal, tokenStartLine, tokenStartCol));
         return Token(TokenType::Assign, tokenStartLine, tokenStartCol);
 
     case '!':
@@ -265,7 +265,7 @@ Token Lexer::scanToken()
 {
     skipWhitespaceAndComments();
     int tokenStartLine = line, tokenStartCol = column; 
-    if (input.eof()) return Token(TokenType::EndOfFile, "", tokenStartLine, tokenStartCol);
+    if (currentChar == EOF) return Token(TokenType::EndOfFile, tokenStartLine, tokenStartCol);
 
     if (auto t = tryBuildIdentifier()) return *t;
     if (auto t = tryBuildNumber())     return *t;
