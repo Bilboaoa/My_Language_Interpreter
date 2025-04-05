@@ -1,3 +1,4 @@
+#pragma once
 #include "error.hpp"
 
 class InterpreterException : public std::runtime_error {

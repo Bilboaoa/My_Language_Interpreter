@@ -3,7 +3,7 @@
 #include <cmath>
 
 #include "lexer.hpp"
-#include "error_module.hpp"
+
 
 const std::unordered_map<std::string, TokenType> keywords = {
     {"int", TokenType::Type},      {"float", TokenType::Type},  {"string", TokenType::Type},
@@ -20,6 +20,16 @@ Lexer::Lexer(std::istream& inputStream)
 int Lexer::digit_to_int(char digit) const
 {
     return static_cast<int>((digit) - ASCII_ZERO);
+}
+
+void Lexer::throwError(ErrorType type, const std::string& msg, int tokenStartLine, int tokenStartCol) const{
+    Error err = {
+    type,
+    msg,
+    tokenStartLine,
+    tokenStartCol
+    };
+    throw InterpreterException(err);
 }
 
 char Lexer::get()
@@ -77,15 +87,7 @@ std::optional<Token> Lexer::tryBuildIdentifier()
         ident += currentChar;
         get();
         if (++currentLen >= MAX_IDENTIFIER_LEN)
-        {
-            Error err = {
-                ErrorType::Lexical,
-                "Identifier is too long",
-                tokenStartLine,
-                tokenStartCol
-                };
-                throw InterpreterException(err);
-        }
+            throwError(ErrorType::Lexical, "Identifier is too long", tokenStartLine, tokenStartCol);
     }
 
         if (keywords.count(ident)) {
@@ -124,15 +126,8 @@ std::optional<Token> Lexer::tryBuildNumber()
         get();
     }
     if (currentChar == '.')
-    {
-        Error err = {
-        ErrorType::Syntax,
-        "Invalid float",
-        tokenStartLine,
-        tokenStartCol
-        };
-        throw InterpreterException(err);
-    }
+        throwError(ErrorType::Syntax, "Invalid float", tokenStartLine, tokenStartCol);
+
     float divisor = std::pow(10.0f, fracDigits);
     float finalValue = static_cast<float>(intPart) + (fracPart / divisor);
     return Token(TokenType::Number, finalValue, tokenStartLine, tokenStartCol);
@@ -181,15 +176,7 @@ std::optional<Token> Lexer::tryBuildString()
     }
     if (currentChar == '"') get();
     else if (currentChar == EOF)
-    {
-        Error err = {
-        ErrorType::Lexical,
-        "Unterminated string literal",
-        tokenStartLine,
-        tokenStartCol
-        };
-    throw InterpreterException(err);        
-    }
+        throwError(ErrorType::Lexical, "Unterminated string literal", tokenStartLine, tokenStartCol);
     return Token(TokenType::StringLiteral, strLiteral, tokenStartLine, tokenStartCol);
 }
 
