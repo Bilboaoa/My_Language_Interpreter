@@ -29,15 +29,25 @@ int main(int argc, char** argv)
     tokens.push_back(token);
 
     for (const auto& t : tokens)
-    {
-        std::cout << "Token(" << static_cast<int>(t.type) << ", ";
-        if (t.value.has_value())
-            std::cout << "haha";//"\"" << t.value.value() << "\"";
-        else
-            std::cout << "null";
+{
+    std::cout << "Token(" << static_cast<int>(t.type) << ", ";
 
-        std::cout << ", line: " << t.line << ", col: " << t.column << ")\n";
+    if (t.value.has_value()) {
+        const auto& val = t.value.value();
+
+        if (std::holds_alternative<int>(val)) {
+            std::cout << std::get<int>(val);
+        } else if (std::holds_alternative<float>(val)) {
+            std::cout << std::get<float>(val);
+        } else if (std::holds_alternative<std::string>(val)) {
+            std::cout << "\"" << std::get<std::string>(val) << "\"";
+        }
+    } else {
+        std::cout << "null";
     }
+
+    std::cout << ", line: " << t.line << ", col: " << t.column << ")\n";
+}
 
 
     return 0;
