@@ -2,6 +2,7 @@
 #include <catch2/catch_all.hpp>
 #include <sstream>
 #include "lexer.hpp"
+#include "error_module.hpp"
 
 std::vector<Token> tokenize(Lexer* lexer)
 {
@@ -97,6 +98,22 @@ TEST_CASE("Number parsing (float)", "[lexer][number]")
     REQUIRE(tokens[0].getValue<float>() == 45.67f);
 }
 
+TEST_CASE("Number parsing with doubled dot", "[lexer][number]")
+{
+    std::istringstream input("45.67.;");
+    Lexer lexer(input);
+
+    try {
+        auto tokens = tokenize(&lexer);
+        FAIL("Expected InterpreterException not thrown");
+    } catch (const InterpreterException& ex) {
+        REQUIRE(ex.error.type == ErrorType::Syntax);
+        REQUIRE(ex.error.message == "Invalid float");
+        REQUIRE(ex.error.line == 1); 
+        REQUIRE(ex.error.column == 1); 
+    }
+}
+
 TEST_CASE("String parsing", "[lexer][string]")
 {
     std::istringstream input("\"Hi\"");
@@ -124,10 +141,15 @@ TEST_CASE("String parsing no end quote", "[lexer][string]")
     std::istringstream input("\"12345");
     Lexer lexer(input);
 
-    auto tokens = tokenize(&lexer);
-
-    REQUIRE(tokens[0].type == TokenType::StringLiteral);
-    REQUIRE(std::get<std::string>(tokens[0].value.value()) == "12345");
+    try {
+        auto tokens = tokenize(&lexer);
+        FAIL("Expected InterpreterException not thrown");
+    } catch (const InterpreterException& ex) {
+        REQUIRE(ex.error.type == ErrorType::Lexical);
+        REQUIRE(ex.error.message == "Unterminated string literal");
+        REQUIRE(ex.error.line == 1); 
+        REQUIRE(ex.error.column == 1); 
+    }
 }
 
 

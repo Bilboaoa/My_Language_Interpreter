@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "lexer.hpp"
+#include "error_module.hpp"
 
 const std::unordered_map<std::string, TokenType> keywords = {
     {"int", TokenType::Type},      {"float", TokenType::Type},  {"string", TokenType::Type},
@@ -110,8 +111,16 @@ Token Lexer::scanToken()
             fracDigits++;
             get();
         }
-        // sprawdzic czy jest kropka i zwrocic blad
-
+        if (currentChar == '.')
+        {
+            Error err = {
+            ErrorType::Syntax,
+            "Invalid float",
+            tokenStartLine,
+            tokenStartCol
+            };
+            throw InterpreterException(err);     
+        }
         float divisor = std::pow(10.0f, fracDigits);
         float finalValue = static_cast<float>(intPart) + (fracPart / divisor);
         return Token(TokenType::Number, finalValue, tokenStartLine, tokenStartCol);
@@ -156,11 +165,21 @@ Token Lexer::scanToken()
             }
         }
         if (currentChar == '"') get();
+        else if (currentChar == EOF)
+        {
+            Error err = {
+            ErrorType::Lexical,
+            "Unterminated string literal",
+            tokenStartLine,
+            tokenStartCol
+            };
+        throw InterpreterException(err);        
+        }
         return Token(TokenType::StringLiteral, strLiteral, tokenStartLine, tokenStartCol);
     }
     
     switch (currentChar)
-{
+    {
     case '+': return consumeAndReturn(Token(TokenType::Plus, tokenStartLine, tokenStartCol));
     case '-': return consumeAndReturn(Token(TokenType::Minus, tokenStartLine, tokenStartCol));
     case '*': return consumeAndReturn(Token(TokenType::Star, tokenStartLine, tokenStartCol));
@@ -219,7 +238,7 @@ Token Lexer::scanToken()
         if (currentChar == '&')
             return consumeAndReturn(Token(TokenType::And, tokenStartLine, tokenStartCol));
         break;
-}
+    }
 
     char unexpected = currentChar;
     get();
