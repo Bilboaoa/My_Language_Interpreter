@@ -65,119 +65,127 @@ Token Lexer::consumeAndReturn(Token returned)
     return returned;
 }
 
-Token Lexer::scanToken()
+std::optional<Token> Lexer::tryBuildIdentifier()
 {
-    skipWhitespaceAndComments();
-    int tokenStartLine = line, tokenStartCol = column; 
-    if (input.eof()) return Token(TokenType::EndOfFile, "", tokenStartLine, tokenStartCol);
+    if (!std::isalpha(currentChar) && currentChar != '_') return std::nullopt;
 
-    if (std::isalpha(currentChar) || currentChar == '_')
-    {
-        std::string ident;
-        while (std::isalnum(currentChar) || currentChar == '_')
-        {
-            ident += currentChar;
-            get();
-        }
-        if (keywords.count(ident))
-        {
-            return Token(keywords.at(ident), ident, tokenStartLine, tokenStartCol);
-        }
-        return Token(TokenType::Identifier, ident, tokenStartLine, tokenStartCol);
+    int startLine = line, startCol = column;
+    std::string ident;
+
+    while (std::isalnum(currentChar) || currentChar == '_') {
+        ident += currentChar;
+        get();
     }
 
-    if (std::isdigit(currentChar))
-    {
-        int intPart = 0;
-        while (std::isdigit(currentChar)) 
-        {
-            int currentDigit = digit_to_int(currentChar);
-            if ((MAXINT - currentDigit)/10 >= intPart)
-            {
-                intPart *= 10;
-                intPart += currentDigit;
-            }
-            get();
-        }
-        if (currentChar != '.')
-        {
-            return Token(TokenType::Number, intPart, tokenStartLine, tokenStartCol);
-        }
-        get();
-        int fracDigits = 0;
-        int fracPart = 0;
-        while (std::isdigit(currentChar)) {
-            fracPart = fracPart * 10 + digit_to_int(currentChar);
-            fracDigits++;
-            get();
-        }
-        if (currentChar == '.')
-        {
-            Error err = {
-            ErrorType::Syntax,
-            "Invalid float",
-            tokenStartLine,
-            tokenStartCol
-            };
-            throw InterpreterException(err);     
-        }
-        float divisor = std::pow(10.0f, fracDigits);
-        float finalValue = static_cast<float>(intPart) + (fracPart / divisor);
-        return Token(TokenType::Number, finalValue, tokenStartLine, tokenStartCol);
+    if (keywords.count(ident)) {
+        return Token(keywords.at(ident), ident, startLine, startCol);
     }
 
-    if (currentChar == '"')
-    {
-        get();
-        std::string strLiteral;
-        while (currentChar != '"' && currentChar != EOF)
-        {
-            if (currentChar == '\\')
-            {
-                get();
+    return Token(TokenType::Identifier, ident, startLine, startCol);
+}
 
-                if (currentChar == EOF) 
+std::optional<Token> Lexer::tryBuildNumber()
+{
+    if (!std::isdigit(currentChar)) return std::nullopt;
+    int tokenStartLine = line, tokenStartCol = column;
+ 
+    int intPart = 0;
+    while (std::isdigit(currentChar)) 
+    {
+        int currentDigit = digit_to_int(currentChar);
+        if ((MAXINT - currentDigit)/10 >= intPart)
+        {
+            intPart *= 10;
+            intPart += currentDigit;
+        }
+        get();
+    }
+    if (currentChar != '.')
+    {
+        return Token(TokenType::Number, intPart, tokenStartLine, tokenStartCol);
+    }
+    get();
+    int fracDigits = 0;
+    int fracPart = 0;
+    while (std::isdigit(currentChar)) {
+        fracPart = fracPart * 10 + digit_to_int(currentChar);
+        fracDigits++;
+        get();
+    }
+    if (currentChar == '.')
+    {
+        Error err = {
+        ErrorType::Syntax,
+        "Invalid float",
+        tokenStartLine,
+        tokenStartCol
+        };
+        throw InterpreterException(err);     
+    }
+    float divisor = std::pow(10.0f, fracDigits);
+    float finalValue = static_cast<float>(intPart) + (fracPart / divisor);
+    return Token(TokenType::Number, finalValue, tokenStartLine, tokenStartCol);
+
+}
+std::optional<Token> Lexer::tryBuildString()
+{
+    if (currentChar != '"')  return std::nullopt;
+    int tokenStartLine = line, tokenStartCol = column;
+
+    get();
+    std::string strLiteral;
+    while (currentChar != '"' && currentChar != EOF)
+    {
+        if (currentChar == '\\')
+            {
+            get();
+
+            if (currentChar == EOF) 
+                break;
+            switch (currentChar)
+            {
+                case 'n':
+                strLiteral += '\n';
                     break;
-                switch (currentChar)
-                {
-                    case 'n':
-                    strLiteral += '\n';
-                        break;
-                    case 't':
-                    strLiteral += '\t';
-                        break;
-                    case '"':
-                    strLiteral += '"';
-                        break;
-                    case '\\':
-                    strLiteral += '\\';
-                        break;
-                    default:
-                    strLiteral += currentChar;
-                        break;
-                }
-                get();
-            }
-            else
-            {
+                case 't':
+                strLiteral += '\t';
+                    break;
+                case '"':
+                strLiteral += '"';
+                    break;
+                case '\\':
+                strLiteral += '\\';
+                    break;
+                default:
                 strLiteral += currentChar;
-                get();
+                    break;
             }
+            get();
         }
-        if (currentChar == '"') get();
-        else if (currentChar == EOF)
+        else
         {
-            Error err = {
-            ErrorType::Lexical,
-            "Unterminated string literal",
-            tokenStartLine,
-            tokenStartCol
-            };
-        throw InterpreterException(err);        
+            strLiteral += currentChar;
+            get();
         }
-        return Token(TokenType::StringLiteral, strLiteral, tokenStartLine, tokenStartCol);
     }
-    
+    if (currentChar == '"') get();
+    else if (currentChar == EOF)
+    {
+        Error err = {
+        ErrorType::Lexical,
+        "Unterminated string literal",
+        tokenStartLine,
+        tokenStartCol
+        };
+    throw InterpreterException(err);        
+    }
+    return Token(TokenType::StringLiteral, strLiteral, tokenStartLine, tokenStartCol);
+}
+
+std::optional<Token> Lexer::tryBuildSymbol()
+{
+    int tokenStartLine = line, tokenStartCol = column;
+
     switch (currentChar)
     {
     case '+': return consumeAndReturn(Token(TokenType::Plus, tokenStartLine, tokenStartCol));
@@ -239,6 +247,19 @@ Token Lexer::scanToken()
             return consumeAndReturn(Token(TokenType::And, tokenStartLine, tokenStartCol));
         break;
     }
+    return std::nullopt;
+}
+
+Token Lexer::scanToken()
+{
+    skipWhitespaceAndComments();
+    int tokenStartLine = line, tokenStartCol = column; 
+    if (input.eof()) return Token(TokenType::EndOfFile, "", tokenStartLine, tokenStartCol);
+
+    if (auto t = tryBuildIdentifier()) return *t;
+    if (auto t = tryBuildNumber())     return *t;
+    if (auto t = tryBuildString())     return *t;
+    if (auto t = tryBuildSymbol())     return *t;
 
     char unexpected = currentChar;
     get();

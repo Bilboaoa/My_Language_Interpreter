@@ -24,4 +24,9 @@ class Lexer
     char get();
     void skipWhitespaceAndComments();
     Token consumeAndReturn(Token returned);
+
+    std::optional<Token> tryBuildIdentifier();
+    std::optional<Token> tryBuildNumber();
+    std::optional<Token> tryBuildString();
+    std::optional<Token> tryBuildSymbol();
 };
