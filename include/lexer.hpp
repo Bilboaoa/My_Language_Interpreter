@@ -4,7 +4,7 @@
 #include <limits>
 
 #include "token.hpp"
-#include "error_module.hpp"
+#include "interpreter_exception.hpp"
 
 class Lexer
 {

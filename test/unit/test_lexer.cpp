@@ -2,7 +2,7 @@
 #include <catch2/catch_all.hpp>
 #include <sstream>
 #include "lexer.hpp"
-#include "error_module.hpp"
+#include "interpreter_exception.hpp"
 
 std::vector<Token> tokenize(Lexer* lexer)
 {
