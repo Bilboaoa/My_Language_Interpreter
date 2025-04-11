@@ -3,6 +3,7 @@
 #include <sstream>
 #include "lexer.hpp"
 #include "interpreter_exception.hpp"
+#include "position.hpp"
 
 std::vector<Token> tokenize(Lexer* lexer)
 {
@@ -65,8 +66,8 @@ TEST_CASE("Too long identifier parsing", "[lexer][identifier]")
     {
         REQUIRE(ex.error.type == ErrorType::Lexical);
         REQUIRE(ex.error.message == "Identifier is too long");
-        REQUIRE(ex.error.line == 1);
-        REQUIRE(ex.error.column == 1);
+        REQUIRE(ex.error.startPosition.column ==  1);
+        REQUIRE(ex.error.startPosition == Position(1, 1));
     }
 }
 
@@ -132,8 +133,7 @@ TEST_CASE("Number parsing with doubled dot", "[lexer][number]")
     {
         REQUIRE(ex.error.type == ErrorType::Syntax);
         REQUIRE(ex.error.message == "Invalid float");
-        REQUIRE(ex.error.line == 1);
-        REQUIRE(ex.error.column == 1);
+        REQUIRE(ex.error.startPosition == Position(1, 1));
     }
 }
 
@@ -173,8 +173,7 @@ TEST_CASE("String parsing no end quote", "[lexer][string]")
     {
         REQUIRE(ex.error.type == ErrorType::Lexical);
         REQUIRE(ex.error.message == "Unterminated string literal");
-        REQUIRE(ex.error.line == 1);
-        REQUIRE(ex.error.column == 1);
+        REQUIRE(ex.error.startPosition == Position(1, 1));
     }
 }
 
@@ -1049,8 +1048,7 @@ TEST_CASE("Lexer handles CRLF line endings", "[lexer][crlf]")
         if (token.type == TokenType::Identifier && token.getValue<std::string>() == "b")
         {
             foundB = true;
-            REQUIRE(token.line == 2);
-            REQUIRE(token.column == 5);
+            REQUIRE(token.startPosition == Position(2, 5));
         }
     }
 
