@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <variant>
-#include <optional>
 #include "position.hpp"
 
 enum class TokenType
@@ -54,28 +53,24 @@ enum class TokenType
 struct Token
 {
     TokenType type;
-    std::optional<std::variant<std::string, int, float>> value;
+    std::variant<std::monostate, std::string, int, float> value;
     Position startPosition;
 
-    Token(TokenType type, Position pos)
-        : type(type), value(std::nullopt), startPosition(pos) {}
-    
-    Token(TokenType type, const std::string& val, Position pos) : type(type), value(val), startPosition(pos)
-    {
-    }
-    Token(TokenType type, int val, Position pos)
+    Token(TokenType type, Position pos) : type(type), value(std::monostate{}), startPosition(pos) {}
+
+    Token(TokenType type, const std::string& val, Position pos)
         : type(type), value(val), startPosition(pos)
     {
     }
+    Token(TokenType type, int val, Position pos) : type(type), value(val), startPosition(pos) {}
 
-    Token(TokenType type, float val, Position start)
-        : type(type), value(val), startPosition(start)
+    Token(TokenType type, float val, Position start) : type(type), value(val), startPosition(start)
     {
     }
 
     template <typename T>
     T getValue() const
     {
-        return std::get<T>(value.value());
+        return std::get<T>(value);
     }
 };

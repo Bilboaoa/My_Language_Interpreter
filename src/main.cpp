@@ -1,13 +1,15 @@
 #include <fstream>
 #include <iostream>
+#include <variant>
 #include "lexer.hpp"
 
-struct PrintVisitor {
+struct PrintVisitor
+{
+    void operator()(std::monostate) const { std::cout << "null"; }
     void operator()(int val) const { std::cout << val; }
     void operator()(float val) const { std::cout << val; }
     void operator()(const std::string& val) const { std::cout << "\"" << val << "\""; }
 };
-
 
 int main(int argc, char** argv)
 {
@@ -38,18 +40,10 @@ int main(int argc, char** argv)
     for (const auto& t : tokens)
     {
         std::cout << "Token(" << static_cast<int>(t.type) << ", ";
+        std::visit(PrintVisitor{}, t.value);
 
-        if (t.value.has_value())
-        {
-            const auto& val = t.value.value();
-            std::visit(PrintVisitor{}, val);
-        }
-        else
-        {
-            std::cout << "null";
-        }
-
-        std::cout << ", line: " << t.startPosition.line << ", col: " << t.startPosition.column << ")\n";
+        std::cout << ", line: " << t.startPosition.line << ", col: " << t.startPosition.column
+                  << ")\n";
     }
 
     return 0;

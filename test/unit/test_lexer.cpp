@@ -66,7 +66,7 @@ TEST_CASE("Too long identifier parsing", "[lexer][identifier]")
     {
         REQUIRE(ex.error.type == ErrorType::Lexical);
         REQUIRE(ex.error.message == "Identifier is too long");
-        REQUIRE(ex.error.startPosition.column ==  1);
+        REQUIRE(ex.error.startPosition.column == 1);
         REQUIRE(ex.error.startPosition == Position(1, 1));
     }
 }
@@ -145,7 +145,7 @@ TEST_CASE("String parsing", "[lexer][string]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::StringLiteral);
-    REQUIRE(std::get<std::string>(tokens[0].value.value()) == "Hi");
+    REQUIRE(tokens[0].getValue<std::string>() == "Hi");
 }
 
 TEST_CASE("String parsing with numbers", "[lexer][string]")
@@ -156,7 +156,7 @@ TEST_CASE("String parsing with numbers", "[lexer][string]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::StringLiteral);
-    REQUIRE(std::get<std::string>(tokens[0].value.value()) == "12345");
+    REQUIRE(tokens[0].getValue<std::string>() == "12345");
 }
 
 TEST_CASE("String parsing no end quote", "[lexer][string]")
@@ -185,7 +185,7 @@ TEST_CASE("String with escape characters", "[lexer][string]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[3].type == TokenType::StringLiteral);
-    REQUIRE(std::get<std::string>(tokens[3].value.value()) == "\"quoted\" and \\slash");
+    REQUIRE(tokens[3].getValue<std::string>() == "\"quoted\" and \\slash");
 }
 
 TEST_CASE("Variable keyword", "[lexer][keyword]")
@@ -196,7 +196,7 @@ TEST_CASE("Variable keyword", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Var);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Keyword: const", "[lexer][keyword]")
@@ -206,7 +206,7 @@ TEST_CASE("Keyword: const", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Const);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Keyword: fun", "[lexer][keyword]")
@@ -216,7 +216,7 @@ TEST_CASE("Keyword: fun", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Fun);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Keyword: return", "[lexer][keyword]")
@@ -226,7 +226,7 @@ TEST_CASE("Keyword: return", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Return);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Keyword: if", "[lexer][keyword]")
@@ -236,7 +236,7 @@ TEST_CASE("Keyword: if", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::If);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Keyword: else", "[lexer][keyword]")
@@ -246,7 +246,7 @@ TEST_CASE("Keyword: else", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Else);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Keyword: while", "[lexer][keyword]")
@@ -256,7 +256,7 @@ TEST_CASE("Keyword: while", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::While);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Keyword: as", "[lexer][keyword]")
@@ -266,7 +266,7 @@ TEST_CASE("Keyword: as", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::As);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Keyword: print", "[lexer][keyword]")
@@ -276,7 +276,7 @@ TEST_CASE("Keyword: print", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Print);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: +", "[lexer][keyword]")
@@ -286,7 +286,7 @@ TEST_CASE("Operator: +", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Plus);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: -", "[lexer][keyword]")
@@ -296,7 +296,7 @@ TEST_CASE("Operator: -", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Minus);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: *", "[lexer][keyword]")
@@ -306,7 +306,7 @@ TEST_CASE("Operator: *", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Star);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: /", "[lexer][keyword]")
@@ -316,7 +316,7 @@ TEST_CASE("Operator: /", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Slash);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: ==", "[lexer][keyword]")
@@ -326,7 +326,7 @@ TEST_CASE("Operator: ==", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Equal);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: !=", "[lexer][operator]")
@@ -336,7 +336,7 @@ TEST_CASE("Operator: !=", "[lexer][operator]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::NotEqual);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: >", "[lexer][operator]")
@@ -346,7 +346,7 @@ TEST_CASE("Operator: >", "[lexer][operator]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Greater);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: >=", "[lexer][operator]")
@@ -356,7 +356,7 @@ TEST_CASE("Operator: >=", "[lexer][operator]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::GreaterEqual);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: <", "[lexer][operator]")
@@ -366,7 +366,7 @@ TEST_CASE("Operator: <", "[lexer][operator]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Less);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: <=", "[lexer][operator]")
@@ -376,7 +376,7 @@ TEST_CASE("Operator: <=", "[lexer][operator]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::LessEqual);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: |", "[lexer][operator]")
@@ -386,7 +386,7 @@ TEST_CASE("Operator: |", "[lexer][operator]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Pipe);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: @@", "[lexer][operator]")
@@ -396,7 +396,7 @@ TEST_CASE("Operator: @@", "[lexer][operator]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::AtAt);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: =", "[lexer][operator]")
@@ -406,7 +406,7 @@ TEST_CASE("Operator: =", "[lexer][operator]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Assign);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: &&", "[lexer][operator]")
@@ -416,7 +416,7 @@ TEST_CASE("Operator: &&", "[lexer][operator]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::And);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Operator: ||", "[lexer][operator]")
@@ -426,7 +426,7 @@ TEST_CASE("Operator: ||", "[lexer][operator]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Or);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Symbol: (", "[lexer][symbol]")
@@ -436,7 +436,7 @@ TEST_CASE("Symbol: (", "[lexer][symbol]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::LParen);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Symbol: )", "[lexer][symbol]")
@@ -446,7 +446,7 @@ TEST_CASE("Symbol: )", "[lexer][symbol]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::RParen);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Brackets", "[lexer][symbol]")
@@ -475,7 +475,7 @@ TEST_CASE("Symbol: ;", "[lexer][symbol]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Semicolon);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Symbol: ,", "[lexer][symbol]")
@@ -485,7 +485,7 @@ TEST_CASE("Symbol: ,", "[lexer][symbol]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Comma);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
 TEST_CASE("Symbol: EOF", "[lexer][symbol]")
@@ -495,10 +495,10 @@ TEST_CASE("Symbol: EOF", "[lexer][symbol]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::EndOfFile);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
     Token token = lexer.scanToken();
     REQUIRE(token.type == TokenType::EndOfFile);
-    REQUIRE(!token.value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(token.value));
 }
 
 TEST_CASE("Symbol: Unknown", "[lexer][symbol]")
@@ -547,11 +547,11 @@ TEST_CASE("Type keywords recognized as TokenType::Type", "[lexer][type]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Type);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
     REQUIRE(tokens[1].type == TokenType::Type);
-    REQUIRE(!tokens[1].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[1].value));
     REQUIRE(tokens[2].type == TokenType::Type);
-    REQUIRE(!tokens[2].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[2].value));
 }
 
 TEST_CASE("Constant variable declaration", "[lexer][keyword]")
@@ -561,16 +561,16 @@ TEST_CASE("Constant variable declaration", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Const);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
     REQUIRE(tokens[1].type == TokenType::Var);
     REQUIRE(tokens[2].type == TokenType::Identifier);
     REQUIRE(tokens[2].getValue<std::string>() == "s");
     REQUIRE(tokens[3].type == TokenType::Assign);
-    REQUIRE(!tokens[3].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[3].value));
     REQUIRE(tokens[4].type == TokenType::Number);
     REQUIRE(tokens[4].getValue<int>() == 12);
     REQUIRE(tokens[5].type == TokenType::Semicolon);
-    REQUIRE(!tokens[5].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[5].value));
 }
 
 TEST_CASE("Function declaration", "[lexer][keyword]")
@@ -580,7 +580,7 @@ TEST_CASE("Function declaration", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Fun);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
     REQUIRE(tokens[1].type == TokenType::Identifier);
     REQUIRE(tokens[1].getValue<std::string>() == "abc");
     REQUIRE(tokens[2].type == TokenType::LParen);
@@ -603,7 +603,7 @@ TEST_CASE("Embeded function declaration", "[lexer][keyword]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Fun);
-    REQUIRE(!tokens[0].value.has_value());
+    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
     REQUIRE(tokens[1].type == TokenType::Identifier);
     REQUIRE(tokens[1].getValue<std::string>() == "abc");
     REQUIRE(tokens[2].type == TokenType::LParen);

@@ -1,28 +1,34 @@
 #include <cctype>
 #include <unordered_map>
 #include <cmath>
+#include <optional>
 
 #include "lexer.hpp"
 
-namespace  {
-    const std::unordered_map<std::string, TokenType> keywords = {
-        {"int", TokenType::Type},      {"float", TokenType::Type},  {"string", TokenType::Type},
-        {"var", TokenType::Var},       {"const", TokenType::Const}, {"fun", TokenType::Fun},
-        {"return", TokenType::Return}, {"if", TokenType::If},       {"else", TokenType::Else},
-        {"while", TokenType::While},   {"as", TokenType::As},       {"print", TokenType::Print}};
+namespace
+{
+const std::unordered_map<std::string, TokenType> keywords = {
+    {"int", TokenType::Type},      {"float", TokenType::Type},  {"string", TokenType::Type},
+    {"var", TokenType::Var},       {"const", TokenType::Const}, {"fun", TokenType::Fun},
+    {"return", TokenType::Return}, {"if", TokenType::If},       {"else", TokenType::Else},
+    {"while", TokenType::While},   {"as", TokenType::As},       {"print", TokenType::Print}};
 
-    int digit_to_int(char digit)
-    {
-        return static_cast<int>((digit)-'0');
-    }
-
+int digit_to_int(char digit)
+{
+    return static_cast<int>((digit) - '0');
 }
+
+bool token_known(Token t)
+{
+    return t.type != TokenType::Unknown;
+}
+
+}  // namespace
 
 Lexer::Lexer(std::istream& inputStream) : input(inputStream), currentPosition(), currentChar()
 {
     get();
 }
-
 
 void Lexer::throwError(ErrorType type, const std::string& msg, Position pos) const
 {
@@ -73,9 +79,10 @@ Token Lexer::consumeAndReturn(Token returned)
     return returned;
 }
 
-std::optional<Token> Lexer::tryBuildIdentifier()
+Token Lexer::tryBuildIdentifier()
 {
-    if (!std::isalpha(currentChar) && currentChar != '_') return std::nullopt;
+    if (!std::isalpha(currentChar) && currentChar != '_')
+        return Token(TokenType::Unknown, currentPosition);
 
     Position startPos = currentPosition;
     std::string ident;
@@ -98,9 +105,9 @@ std::optional<Token> Lexer::tryBuildIdentifier()
     return Token(TokenType::Identifier, ident, startPos);
 }
 
-std::optional<Token> Lexer::tryBuildNumber()
+Token Lexer::tryBuildNumber()
 {
-    if (!std::isdigit(currentChar)) return std::nullopt;
+    if (!std::isdigit(currentChar)) return Token(TokenType::Unknown, currentPosition);
     Position startPos = currentPosition;
 
     int intPart = 0;
@@ -127,16 +134,15 @@ std::optional<Token> Lexer::tryBuildNumber()
         fracDigits++;
         get();
     }
-    if (currentChar == '.')
-        throwError(ErrorType::Syntax, "Invalid float", startPos);
+    if (currentChar == '.') throwError(ErrorType::Syntax, "Invalid float", startPos);
 
     float divisor = std::pow(10.0f, fracDigits);
     float finalValue = static_cast<float>(intPart) + (fracPart / divisor);
     return Token(TokenType::Number, finalValue, startPos);
 }
-std::optional<Token> Lexer::tryBuildString()
+Token Lexer::tryBuildString()
 {
-    if (currentChar != '"') return std::nullopt;
+    if (currentChar != '"') return Token(TokenType::Unknown, currentPosition);
     Position startPos = currentPosition;
 
     get();
@@ -181,7 +187,7 @@ std::optional<Token> Lexer::tryBuildString()
     return Token(TokenType::StringLiteral, strLiteral, startPos);
 }
 
-std::optional<Token> Lexer::tryBuildSymbol()
+Token Lexer::tryBuildSymbol()
 {
     Position startPos = currentPosition;
 
@@ -198,39 +204,33 @@ std::optional<Token> Lexer::tryBuildSymbol()
 
         case '=':
             get();
-            if (currentChar == '=')
-                return consumeAndReturn(Token(TokenType::Equal, startPos));
+            if (currentChar == '=') return consumeAndReturn(Token(TokenType::Equal, startPos));
             return Token(TokenType::Assign, startPos);
 
         case '!':
             get();
-            if (currentChar == '=')
-                return consumeAndReturn(Token(TokenType::NotEqual, startPos));
+            if (currentChar == '=') return consumeAndReturn(Token(TokenType::NotEqual, startPos));
             break;
 
         case '>':
             get();
             if (currentChar == '=')
-                return consumeAndReturn(
-                    Token(TokenType::GreaterEqual, startPos));
+                return consumeAndReturn(Token(TokenType::GreaterEqual, startPos));
             return Token(TokenType::Greater, startPos);
 
         case '<':
             get();
-            if (currentChar == '=')
-                return consumeAndReturn(Token(TokenType::LessEqual, startPos));
+            if (currentChar == '=') return consumeAndReturn(Token(TokenType::LessEqual, startPos));
             return Token(TokenType::Less, startPos);
 
         case '|':
             get();
-            if (currentChar == '|')
-                return consumeAndReturn(Token(TokenType::Or, startPos));
+            if (currentChar == '|') return consumeAndReturn(Token(TokenType::Or, startPos));
             return Token(TokenType::Pipe, startPos);
 
         case '@':
             get();
-            if (currentChar == '@')
-                return consumeAndReturn(Token(TokenType::AtAt, startPos));
+            if (currentChar == '@') return consumeAndReturn(Token(TokenType::AtAt, startPos));
             break;
 
         case '(':
@@ -247,11 +247,10 @@ std::optional<Token> Lexer::tryBuildSymbol()
             return consumeAndReturn(Token(TokenType::Comma, startPos));
         case '&':
             get();
-            if (currentChar == '&')
-                return consumeAndReturn(Token(TokenType::And, startPos));
+            if (currentChar == '&') return consumeAndReturn(Token(TokenType::And, startPos));
             break;
     }
-    return std::nullopt;
+    return Token(TokenType::Unknown, currentPosition);
 }
 
 Token Lexer::scanToken()
@@ -261,10 +260,14 @@ Token Lexer::scanToken()
 
     if (currentChar == EOF) return Token(TokenType::EndOfFile, startPos);
 
-    if (auto t = tryBuildIdentifier()) return *t;
-    if (auto t = tryBuildNumber()) return *t;
-    if (auto t = tryBuildString()) return *t;
-    if (auto t = tryBuildSymbol()) return *t;
+    Token token = tryBuildIdentifier();
+    if (token_known(token)) return token;
+    token = tryBuildNumber();
+    if (token_known(token)) return token;
+    token = tryBuildString();
+    if (token_known(token)) return token;
+    token = tryBuildSymbol();
+    if (token_known(token)) return token;
 
     char unexpected = currentChar;
     get();

@@ -26,8 +26,8 @@ class Lexer
     Token consumeAndReturn(Token returned);
     void throwError(ErrorType type, const std::string& msg, Position pos) const;
 
-    std::optional<Token> tryBuildIdentifier();
-    std::optional<Token> tryBuildNumber();
-    std::optional<Token> tryBuildString();
-    std::optional<Token> tryBuildSymbol();
+    Token tryBuildIdentifier();
+    Token tryBuildNumber();
+    Token tryBuildString();
+    Token tryBuildSymbol();
 };

@@ -37,7 +37,7 @@ struct Error
                 break;
         }
 
-        return typeStr + " at " + std::to_string(startPosition.line) + ":" + std::to_string(startPosition.column) + " → " +
-               message;
+        return typeStr + " at " + std::to_string(startPosition.line) + ":" +
+               std::to_string(startPosition.column) + " → " + message;
     }
 };
