@@ -1,6 +1,15 @@
 #include <fstream>
 #include <iostream>
+#include <variant>
 #include "lexer.hpp"
+
+struct PrintVisitor
+{
+    void operator()(std::monostate) const { std::cout << "null"; }
+    void operator()(int val) const { std::cout << val; }
+    void operator()(float val) const { std::cout << val; }
+    void operator()(const std::string& val) const { std::cout << "\"" << val << "\""; }
+};
 
 int main(int argc, char** argv)
 {
@@ -31,30 +40,10 @@ int main(int argc, char** argv)
     for (const auto& t : tokens)
     {
         std::cout << "Token(" << static_cast<int>(t.type) << ", ";
+        std::visit(PrintVisitor{}, t.value);
 
-        if (t.value.has_value())
-        {
-            const auto& val = t.value.value();
-
-            if (std::holds_alternative<int>(val))
-            {
-                std::cout << std::get<int>(val);
-            }
-            else if (std::holds_alternative<float>(val))
-            {
-                std::cout << std::get<float>(val);
-            }
-            else if (std::holds_alternative<std::string>(val))
-            {
-                std::cout << "\"" << std::get<std::string>(val) << "\"";
-            }
-        }
-        else
-        {
-            std::cout << "null";
-        }
-
-        std::cout << ", line: " << t.line << ", col: " << t.column << ")\n";
+        std::cout << ", line: " << t.startPosition.line << ", col: " << t.startPosition.column
+                  << ")\n";
     }
 
     return 0;

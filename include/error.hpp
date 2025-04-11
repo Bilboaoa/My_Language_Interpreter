@@ -2,6 +2,8 @@
 #include <string>
 #include <stdexcept>
 
+#include "position.hpp"
+
 enum class ErrorType
 {
     Lexical,
@@ -14,8 +16,7 @@ struct Error
 {
     ErrorType type;
     std::string message;
-    int line;
-    int column;
+    Position startPosition;
 
     std::string toString() const
     {
@@ -36,7 +37,7 @@ struct Error
                 break;
         }
 
-        return typeStr + " at " + std::to_string(line) + ":" + std::to_string(column) + " → " +
-               message;
+        return typeStr + " at " + std::to_string(startPosition.line) + ":" +
+               std::to_string(startPosition.column) + " → " + message;
     }
 };

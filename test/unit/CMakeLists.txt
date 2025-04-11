@@ -3,6 +3,7 @@ add_executable(unit_tests
     ../../src/lexer.cpp
     ../../include/error.hpp
     ../../include/interpreter_exception.hpp
+    ../../include/position.hpp
 )
 
 target_include_directories(unit_tests PRIVATE
