@@ -111,16 +111,23 @@ Token Lexer::tryBuildNumber()
     Position startPos = currentPosition;
 
     int intPart = 0;
-    while (std::isdigit(currentChar))
+    bool firstZero = false;
+    if (currentChar == '0')
     {
-        int currentDigit = digit_to_int(currentChar);
-        if ((MAXINT - currentDigit) / 10 >= intPart)
-        {
-            intPart *= 10;
-            intPart += currentDigit;
-        }
         get();
+        firstZero = true;
     }
+    if (!firstZero)
+        while (std::isdigit(currentChar))
+        {
+            int currentDigit = digit_to_int(currentChar);
+            if ((MAXINT - currentDigit) / 10 >= intPart)
+            {
+                intPart *= 10;
+                intPart += currentDigit;
+            }
+            get();
+        }
     if (currentChar != '.')
     {
         return Token(TokenType::Number, intPart, startPos);

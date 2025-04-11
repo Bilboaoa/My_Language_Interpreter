@@ -20,6 +20,39 @@ std::vector<Token> tokenize(Lexer* lexer)
     return tokens;
 }
 
+TEST_CASE("Basic identifier parsing", "[lexer][identifier]")
+{
+    std::istringstream input("alpha");
+    Lexer lexer(input);
+
+    auto tokens = tokenize(&lexer);
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[0].getValue<std::string>() == "alpha");
+}
+
+TEST_CASE("Identifier _ parsing", "[lexer][identifier]")
+{
+    std::istringstream input("_alpha");
+    Lexer lexer(input);
+
+    auto tokens = tokenize(&lexer);
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[0].getValue<std::string>() == "_alpha");
+}
+
+TEST_CASE("Identifier with number parsing", "[lexer][identifier]")
+{
+    std::istringstream input("alpha234");
+    Lexer lexer(input);
+
+    auto tokens = tokenize(&lexer);
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[0].getValue<std::string>() == "alpha234");
+}
+
 TEST_CASE("Identifier parsing", "[lexer][identifier]")
 {
     std::istringstream input("alpha _temp1 x2 alpha_temp1;");
@@ -39,7 +72,7 @@ TEST_CASE("Identifier parsing", "[lexer][identifier]")
 
 TEST_CASE("Invalid identifier parsing", "[lexer][identifier]")
 {
-    std::istringstream input("123xdd;");
+    std::istringstream input("123xdd");
     Lexer lexer(input);
 
     auto tokens = tokenize(&lexer);
@@ -71,6 +104,39 @@ TEST_CASE("Too long identifier parsing", "[lexer][identifier]")
     }
 }
 
+TEST_CASE("Identifier parsing with keyword var", "[lexer][identifier]")
+{
+    std::istringstream input("var_a");
+    Lexer lexer(input);
+
+    auto tokens = tokenize(&lexer);
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[0].getValue<std::string>() == "var_a");
+}
+
+TEST_CASE("Identifier parsing with keyword fun", "[lexer][identifier]")
+{
+    std::istringstream input("fun_a");
+    Lexer lexer(input);
+
+    auto tokens = tokenize(&lexer);
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[0].getValue<std::string>() == "fun_a");
+}
+
+TEST_CASE("Identifier parsing with keyword if", "[lexer][identifier]")
+{
+    std::istringstream input("if_a");
+    Lexer lexer(input);
+
+    auto tokens = tokenize(&lexer);
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(tokens[0].getValue<std::string>() == "if_a");
+}
+
 TEST_CASE("Identifier parsing with keyword", "[lexer][identifier]")
 {
     std::istringstream input("var_a fun_a if_a");
@@ -88,7 +154,7 @@ TEST_CASE("Identifier parsing with keyword", "[lexer][identifier]")
 
 TEST_CASE("Number parsing (int)", "[lexer][number]")
 {
-    std::istringstream input("123;");
+    std::istringstream input("123");
     Lexer lexer(input);
 
     auto tokens = tokenize(&lexer);
@@ -99,7 +165,7 @@ TEST_CASE("Number parsing (int)", "[lexer][number]")
 
 TEST_CASE("Number parsing out for range (int)", "[lexer][number]")
 {
-    std::istringstream input("2147483650;");
+    std::istringstream input("2147483650");
     Lexer lexer(input);
 
     auto tokens = tokenize(&lexer);
@@ -108,9 +174,22 @@ TEST_CASE("Number parsing out for range (int)", "[lexer][number]")
     REQUIRE(tokens[0].getValue<int>() == 214748365);
 }
 
+TEST_CASE("Number parsing 00 (int)", "[lexer][number]")
+{
+    std::istringstream input("00");
+    Lexer lexer(input);
+
+    auto tokens = tokenize(&lexer);
+
+    REQUIRE(tokens[0].type == TokenType::Number);
+    REQUIRE(tokens[0].getValue<int>() == 0);
+    REQUIRE(tokens[1].type == TokenType::Number);
+    REQUIRE(tokens[1].getValue<int>() == 0);
+}
+
 TEST_CASE("Number parsing (float)", "[lexer][number]")
 {
-    std::istringstream input("45.67;");
+    std::istringstream input("45.67");
     Lexer lexer(input);
 
     auto tokens = tokenize(&lexer);
@@ -119,9 +198,31 @@ TEST_CASE("Number parsing (float)", "[lexer][number]")
     REQUIRE(tokens[0].getValue<float>() == 45.67f);
 }
 
+TEST_CASE("Number parsing 0.0 (float)", "[lexer][number]")
+{
+    std::istringstream input("0.0");
+    Lexer lexer(input);
+
+    auto tokens = tokenize(&lexer);
+
+    REQUIRE(tokens[0].type == TokenType::Number);
+    REQUIRE(tokens[0].getValue<float>() == 0.0f);
+}
+
+TEST_CASE("Number parsing 0.0120 (float)", "[lexer][number]")
+{
+    std::istringstream input("0.0120");
+    Lexer lexer(input);
+
+    auto tokens = tokenize(&lexer);
+
+    REQUIRE(tokens[0].type == TokenType::Number);
+    REQUIRE(tokens[0].getValue<float>() == 0.012f);
+}
+
 TEST_CASE("Number parsing with doubled dot", "[lexer][number]")
 {
-    std::istringstream input("45.67.;");
+    std::istringstream input("45.67.");
     Lexer lexer(input);
 
     try
@@ -162,6 +263,24 @@ TEST_CASE("String parsing with numbers", "[lexer][string]")
 TEST_CASE("String parsing no end quote", "[lexer][string]")
 {
     std::istringstream input("\"12345");
+    Lexer lexer(input);
+
+    try
+    {
+        auto tokens = tokenize(&lexer);
+        FAIL("Expected InterpreterException not thrown");
+    }
+    catch (const InterpreterException& ex)
+    {
+        REQUIRE(ex.error.type == ErrorType::Lexical);
+        REQUIRE(ex.error.message == "Unterminated string literal");
+        REQUIRE(ex.error.startPosition == Position(1, 1));
+    }
+}
+
+TEST_CASE("String parsing no end quote and last backslash", "[lexer][string]")
+{
+    std::istringstream input(R"("\)");
     Lexer lexer(input);
 
     try
@@ -237,6 +356,16 @@ TEST_CASE("Keyword: if", "[lexer][keyword]")
 
     REQUIRE(tokens[0].type == TokenType::If);
     REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
+}
+
+TEST_CASE("Identifier: iff", "[lexer][keyword]")
+{
+    std::istringstream input("iff");
+    Lexer lexer(input);
+    auto tokens = tokenize(&lexer);
+
+    REQUIRE(tokens[0].type == TokenType::Identifier);
+    REQUIRE(std::holds_alternative<std::string>(tokens[0].value));
 }
 
 TEST_CASE("Keyword: else", "[lexer][keyword]")
