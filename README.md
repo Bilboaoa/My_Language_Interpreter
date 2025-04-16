@@ -35,3 +35,8 @@ just clean
 ```bash
 just docs
 ```
+
+### Linter: cppcheck
+```bash
+just lint
+```
