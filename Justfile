@@ -21,3 +21,6 @@ format:
 
 clean:
     rm -rf build
+
+doc:
+    doxygen Doxyfile
