@@ -17,7 +17,7 @@ test: build
     cmake --build build --target test
 
 format:
-    clang-format -i $(find src include test \( -name '*.cpp' -o -name '*.hpp' \) -not -path "./build/*" -not -path "./_deps/*" \)
+    clang-format -i $(find src include test \( -name '*.cpp' -o -name '*.hpp' \) -not -path "./build/*" -not -path "./_deps/*" )
 
 clean:
     rm -rf build

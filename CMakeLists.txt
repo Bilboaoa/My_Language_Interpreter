@@ -11,6 +11,9 @@ target_include_directories(bibl PRIVATE src include)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     add_compile_options(-Wall -Wextra -pedantic -Werror)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_compile_options(-g)
+    endif()
 endif()
 
 include(FetchContent)
