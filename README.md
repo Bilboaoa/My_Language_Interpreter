@@ -5,8 +5,6 @@ To use the interpreter you will first need to install Just following the instruc
 Wybierz tryb budowania
 ```bash
 just build
-just debug
-just release
 ```
 
 ### Running the interpreter
