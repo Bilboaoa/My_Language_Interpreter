@@ -24,3 +24,6 @@ clean:
 
 doc:
     doxygen Doxyfile
+
+lint:
+    cppcheck --enable=all --suppress=missingIncludeSystem include/* src/*
