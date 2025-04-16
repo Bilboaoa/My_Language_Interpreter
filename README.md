@@ -1,5 +1,5 @@
 ## Installation
-To use the interpreter you will first need to install Just following the instructions provided by the README.md which is located [here (https://github.com/casey/just)][here] 
+To use the interpreter you will first need to install Just following the instructions provided by the README.md which is located [here (https://github.com/casey/just)]
 
 ### Building: cmake
 Wybierz tryb budowania
