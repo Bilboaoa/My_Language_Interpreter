@@ -29,3 +29,9 @@ just format
 ```bash
 just clean
 ```
+
+
+### Generating documentation: doxygen
+```bash
+just docs
+```
