@@ -21,7 +21,7 @@ just format
 
 ### Testing: catch2
 ```bash
-just format
+just test
 ```
 
 ### Deleting the built program
@@ -32,7 +32,7 @@ just clean
 
 ### Generating documentation: doxygen
 ```bash
-just docs
+just doc
 ```
 
 ### Linter: cppcheck
