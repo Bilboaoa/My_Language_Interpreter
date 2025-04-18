@@ -1,7 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <variant>
-#include "lexer.hpp"
+#include "parser.hpp"
 
 struct PrintVisitor
 {
@@ -26,25 +26,9 @@ int main(int argc, char** argv)
         return 1;
     }
     Lexer lexer(file);
-    std::vector<Token> tokens;
-    Token token = lexer.scanToken();
+    Parser parser(lexer);
 
-    while (token.type != TokenType::EndOfFile)
-    {
-        tokens.push_back(token);
-        token = lexer.scanToken();
-    }
-
-    tokens.push_back(token);
-
-    for (const auto& t : tokens)
-    {
-        std::cout << "Token(" << static_cast<int>(t.type) << ", ";
-        std::visit(PrintVisitor{}, t.value);
-
-        std::cout << ", line: " << t.startPosition.line << ", col: " << t.startPosition.column
-                  << ")\n";
-    }
+    std::unique_ptr<ProgramNode> program = parser.parseProgram();
 
     return 0;
 }

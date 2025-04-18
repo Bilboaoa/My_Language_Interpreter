@@ -7,7 +7,8 @@
 #include "position.hpp"
 #include "interpreter_exception.hpp"
 
-struct FuncDefArgument {
+struct FuncDefArgument
+{
     Token modifierToken;
     Token id;
 };
@@ -94,29 +95,21 @@ class FunctionCallNode : public ExpressionNode
     Position getStartPosition() const override { return callee->getStartPosition(); }
 };
 
-class FunctionLiteralNode : public ExpressionNode
-{
-   public:
-    std::vector<FuncDefArgument> parameters; 
-    std::unique_ptr<StatementBlockNode> body;
-    Token funToken;
-    Token lParenToken;
-    Token rParenToken;
-    FunctionLiteralNode(Token funToken, Token lParenToken,
-                        std::vector<FuncDefArgument> parameters, Token rParenToken,
-                        std::unique_ptr<StatementBlockNode> body)
-        : funToken(funToken),
-          lParenToken(lParenToken),
-          parameters(std::move(parameters)),
-          rParenToken(rParenToken),
-          body(std::move(body))
-    {
-    }
-    Position getStartPosition() const override { return funToken.startPosition; }
-};
-
 class StatementNode : public AstNode
 {
+};
+
+class ExpressionStatementNode : public StatementNode
+{
+   public:
+    std::unique_ptr<ExpressionNode> expression;
+
+    ExpressionStatementNode(std::unique_ptr<ExpressionNode> expression)
+        : expression(std::move(expression))
+    {
+    }
+
+    Position getStartPosition() const override { return expression->getStartPosition(); }
 };
 
 class StatementBlockNode : public StatementNode
@@ -133,6 +126,40 @@ class StatementBlockNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return lBracketToken.startPosition; }
+};
+
+class FunctionDeclarationNode : public AstNode
+{
+   public:
+    Token name;
+    std::vector<FuncDefArgument> params;
+    std::unique_ptr<StatementBlockNode> body;
+    FunctionDeclarationNode(Token n, std::vector<FuncDefArgument> param,
+                            std::unique_ptr<StatementBlockNode> bod)
+        : name(n), params(param), body(std::move(bod))
+    {
+    }
+    Position getStartPosition() const override { return name.startPosition; }
+};
+
+class FunctionLiteralNode : public ExpressionNode
+{
+   public:
+    std::vector<FuncDefArgument> parameters;
+    std::unique_ptr<StatementBlockNode> body;
+    Token funToken;
+    Token lParenToken;
+    Token rParenToken;
+    FunctionLiteralNode(Token funToken, Token lParenToken, std::vector<FuncDefArgument> parameters,
+                        Token rParenToken, std::unique_ptr<StatementBlockNode> body)
+        : funToken(funToken),
+          lParenToken(lParenToken),
+          parameters(std::move(parameters)),
+          rParenToken(rParenToken),
+          body(std::move(body))
+    {
+    }
+    Position getStartPosition() const override { return funToken.startPosition; }
 };
 
 class IfStatementNode : public StatementNode
