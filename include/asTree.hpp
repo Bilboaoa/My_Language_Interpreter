@@ -152,11 +152,11 @@ class FunctionLiteralNode : public ExpressionNode
     Token rParenToken;
     FunctionLiteralNode(Token funToken, Token lParenToken, std::vector<FuncDefArgument> parameters,
                         Token rParenToken, std::unique_ptr<StatementBlockNode> body)
-        : funToken(funToken),
+        : parameters(std::move(parameters)),
+          body(std::move(body)),
+          funToken(funToken),
           lParenToken(lParenToken),
-          parameters(std::move(parameters)),
-          rParenToken(rParenToken),
-          body(std::move(body))
+          rParenToken(rParenToken)
     {
     }
     Position getStartPosition() const override { return funToken.startPosition; }

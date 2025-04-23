@@ -227,6 +227,8 @@ std::unique_ptr<StatementNode> Parser::parsePossibleAssignOrCall(Token idToken)
         std::unique_ptr<ExpressionNode> call = parseFunctionCall(std::move(callee));
         return std::make_unique<ExpressionStatementNode>(std::move(call));
     }
+    // TODO: poprawić default
+    return nullptr;
 }
 
 // CallArguments   = “(“, [ ArgumentList ], “)” ;
