@@ -57,11 +57,15 @@ std::unique_ptr<ProgramNode> Parser::parseProgram()
         {
             declarations.push_back(parseFunctionDeclaration());
         }
-        declarations.push_back(parseDeclaration());
+        else if (check(TokenType::Var) || check(TokenType::Const))
+        {
+            declarations.push_back(parseDeclaration());
+        }
     }
     return std::make_unique<ProgramNode>(std::move(declarations));
 }
 
+// FunctionDeclaration = “fun”, id, “(“, [ Parameters ], “)”, StatementBlock ;
 std::unique_ptr<FunctionDeclarationNode> Parser::parseFunctionDeclaration()
 {
     consume(TokenType::Fun, "Expected 'fun'");
@@ -74,6 +78,7 @@ std::unique_ptr<FunctionDeclarationNode> Parser::parseFunctionDeclaration()
     return std::make_unique<FunctionDeclarationNode>(name, params, std::move(body));
 }
 
+// Parameters = Parameter, {“,”, Parameter }
 std::vector<FuncDefArgument> Parser::parseParameters()
 {
     std::vector<FuncDefArgument> params;
@@ -97,6 +102,7 @@ std::vector<FuncDefArgument> Parser::parseParameters()
     return params;
 }
 
+// StatementBlock = “[“, { Statement }, “]” ;
 std::unique_ptr<StatementBlockNode> Parser::parseStatementBlock()
 {
     consume(TokenType::LBracket, "Expected '['");
@@ -109,6 +115,8 @@ std::unique_ptr<StatementBlockNode> Parser::parseStatementBlock()
     return std::make_unique<StatementBlockNode>(currentToken, std::move(statements), currentToken);
 }
 
+// Statement = IdOrCallAssign | IfStatement | Declaration, “;” | ReturnStatement, “;” |
+// WhileStatement;
 std::unique_ptr<StatementNode> Parser::parseStatement()
 {
     if (check(TokenType::If))
@@ -129,17 +137,7 @@ std::unique_ptr<StatementNode> Parser::parseStatement()
     }
     if (check(TokenType::Identifier))
     {
-        // Jak wykonać to bez peek
-        if (check(TokenType::LParen))
-        {
-            std::unique_ptr<ExpressionNode> call = parseFactor();
-            consume(TokenType::Semicolon, "Expected ';'");
-            return std::make_unique<ExpressionStatementNode>(std::move(call));
-        }
-        else if (check(TokenType::Assign)) 
-        {
-            return parseAssign();
-        }
+        return parseIdOrCallAssign();
     }
 
     std::unique_ptr<ExpressionNode> expr = parseExpression();
@@ -147,6 +145,7 @@ std::unique_ptr<StatementNode> Parser::parseStatement()
     return std::make_unique<ExpressionStatementNode>(std::move(expr));
 }
 
+// IfStatement = “if”, “(“, LogicalExpr, “)”, StatementBlock, [“else”, StatementBlock] ;
 std::unique_ptr<IfStatementNode> Parser::parseIfStatement()
 {
     consume(TokenType::If, "Expected 'if'");
@@ -164,6 +163,7 @@ std::unique_ptr<IfStatementNode> Parser::parseIfStatement()
                                              std::move(elseBranch), currentToken);
 }
 
+// WhileStatement = “while”, “(“, LogicalExpr, “)”, StatementBlock ;
 std::unique_ptr<WhileStatementNode> Parser::parseWhileStatement()
 {
     consume(TokenType::While, "Expected 'while'");
@@ -175,6 +175,7 @@ std::unique_ptr<WhileStatementNode> Parser::parseWhileStatement()
                                                 currentToken, std::move(body));
 }
 
+// ReturnStatement = “return”, ( Expression | FunctionLiteral );
 std::unique_ptr<ReturnStatementNode> Parser::parseReturnStatement()
 {
     consume(TokenType::Return, "Expected 'return'");
@@ -187,10 +188,15 @@ std::unique_ptr<ReturnStatementNode> Parser::parseReturnStatement()
     return std::make_unique<ReturnStatementNode>(currentToken, std::move(returnValue));
 }
 
+// Declaration = (“var” | “const var”), id, [“=”, Expression] ;
 std::unique_ptr<DeclarationNode> Parser::parseDeclaration()
 {
-    Token modifier = consume(TokenType::Var, "Expected 'var' lub 'const var'");
-    Token name = consume(TokenType::Identifier, "Expected nazwy zmiennej");
+    Token modifier = Token(TokenType::Unknown, currentToken.startPosition);
+    if (check(TokenType::Const))
+        modifier = consume(TokenType::Const, "Expected 'const var'");
+    else
+        modifier = consume(TokenType::Var, "Expected 'var'");
+    Token name = consume(TokenType::Identifier, "Expected variable's name");
     std::unique_ptr<ExpressionNode> initializer = nullptr;
     if (match({TokenType::Assign}))
     {
@@ -200,104 +206,30 @@ std::unique_ptr<DeclarationNode> Parser::parseDeclaration()
     return std::make_unique<DeclarationNode>(modifier, name, std::move(initializer));
 }
 
-std::unique_ptr<AssignNode> Parser::parseAssign()
+// IdOrCallAssign = id, PossibleAssignOrCall ;
+std::unique_ptr<StatementNode> Parser::parseIdOrCallAssign()
 {
-    Token name = consume(TokenType::Identifier, "Expected variable name");
-    consume(TokenType::Assign, "Expected '='");
-    std::unique_ptr<ExpressionNode> expr = parseExpression();
-    consume(TokenType::Semicolon, "Expected ';'");
-    return std::make_unique<AssignNode>(name, currentToken, std::move(expr));
+    Token idToken = consume(TokenType::Identifier, "Expected identifier");
+    return parsePossibleAssignOrCall(idToken);
 }
 
-std::unique_ptr<ExpressionNode> Parser::parseExpression()
+// PossibleAssignOrCall = "=" Expression ";" | [ CallArguments ] ";" ;
+std::unique_ptr<StatementNode> Parser::parsePossibleAssignOrCall(Token idToken)
 {
-    if (check(TokenType::Fun))
+    if (match({TokenType::Assign}))
     {
-        return parseFunctionLiteral();
+        std::unique_ptr<ExpressionNode> expr = parseExpression();
+        return std::make_unique<AssignNode>(idToken, currentToken, std::move(expr));
     }
-
-    std::unique_ptr<ExpressionNode> left = parseSimpleExpression();
-
-    if (match({TokenType::As}))
+    else if (check(TokenType::LParen))
     {
-        Token type = consume(TokenType::Identifier, "Expected a type");
-        return std::make_unique<TypeCastNode>(std::move(left), type);
+        std::unique_ptr<ExpressionNode> callee = std::make_unique<IdentifierNode>(idToken);
+        std::unique_ptr<ExpressionNode> call = parseFunctionCall(std::move(callee));
+        return std::make_unique<ExpressionStatementNode>(std::move(call));
     }
-
-    return left;
 }
 
-std::unique_ptr<ExpressionNode> Parser::parseTypeCastExpression()
-{
-    std::unique_ptr<ExpressionNode> expr = parseLogicalExpr();
-    if (match({TokenType::As}))
-    {
-        Token type = consume(TokenType::Identifier, "Expected a type");
-        return std::make_unique<TypeCastNode>(std::move(expr), type);
-    }
-    return expr;
-}
-
-std::unique_ptr<ExpressionNode> Parser::parseLogicalExpr()
-{
-    std::unique_ptr<ExpressionNode> left = parseRelExpression();
-    while (match({TokenType::And, TokenType::Or}))
-    {
-        Token op = currentToken;
-        advance();
-        std::unique_ptr<ExpressionNode> right = parseRelExpression();
-        left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
-    }
-    return left;
-}
-
-std::unique_ptr<ExpressionNode> Parser::parseRelExpression()
-{
-    std::unique_ptr<ExpressionNode> left = parseSimpleExpression();
-    while (match({TokenType::Equal, TokenType::NotEqual, TokenType::Greater,
-                  TokenType::GreaterEqual, TokenType::Less, TokenType::LessEqual}))
-    {
-        Token op = advance();
-        std::unique_ptr<ExpressionNode> right = parseSimpleExpression();
-        left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
-    }
-    return left;
-}
-
-std::unique_ptr<ExpressionNode> Parser::parseSimpleExpression()
-{
-    std::unique_ptr<ExpressionNode> left = parseTerm();
-    while (match({TokenType::Plus, TokenType::Minus, TokenType::Pipe}))
-    {
-        Token op = advance();
-        std::unique_ptr<ExpressionNode> right = parseTerm();
-        left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
-    }
-    return left;
-}
-
-std::unique_ptr<ExpressionNode> Parser::parseTerm()
-{
-    std::unique_ptr<ExpressionNode> left = parseFactor();
-    while (match({TokenType::Star, TokenType::Slash}))
-    {
-        Token op = advance();
-        std::unique_ptr<ExpressionNode> right = parseFactor();
-        left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
-    }
-    return left;
-}
-
-std::unique_ptr<ExpressionNode> Parser::parseFactor()
-{
-    std::unique_ptr<ExpressionNode> expr = parseBaseFactor();
-    while (check(TokenType::LParen))
-    {
-        expr = parseFunctionCall(std::move(expr));
-    }
-    return expr;
-}
-
+// CallArguments   = “(“, [ ArgumentList ], “)” ;
 std::unique_ptr<ExpressionNode> Parser::parseFunctionCall(std::unique_ptr<ExpressionNode> callee)
 {
     consume(TokenType::LParen, "Expected '('");
@@ -306,6 +238,7 @@ std::unique_ptr<ExpressionNode> Parser::parseFunctionCall(std::unique_ptr<Expres
     return std::make_unique<FunctionCallNode>(std::move(callee), std::move(args));
 }
 
+// ArgumentList    = Expression, { “,”, Expression } ;
 std::vector<std::unique_ptr<ExpressionNode>> Parser::parseArgumentList()
 {
     std::vector<std::unique_ptr<ExpressionNode>> args;
@@ -319,6 +252,110 @@ std::vector<std::unique_ptr<ExpressionNode>> Parser::parseArgumentList()
     return args;
 }
 
+// Expression = SimpleExpression | TypeCastExpression | FunctionLiteral;
+std::unique_ptr<ExpressionNode> Parser::parseExpression()
+{
+    if (check(TokenType::Fun))
+    {
+        return parseFunctionLiteral();
+    }
+
+    std::unique_ptr<ExpressionNode> left = parseSimpleExpression();
+
+    if (check(TokenType::As))
+    {
+        return parseTypeCastExpression(std::move(left));
+    }
+
+    return left;
+}
+
+// TypeCastExpression = Expression, “as”, Type ;
+std::unique_ptr<ExpressionNode> Parser::parseTypeCastExpression(
+    std::unique_ptr<ExpressionNode> expr)
+{
+    if (match({TokenType::As}))
+    {
+        Token type = consume(TokenType::Identifier, "Expected a type");
+        return std::make_unique<TypeCastNode>(std::move(expr), type);
+    }
+    return expr;
+}
+
+// LogicalExpr   = RelExpression, LogicalExpr'
+std::unique_ptr<ExpressionNode> Parser::parseLogicalExpr()
+{
+    std::unique_ptr<ExpressionNode> left = parseRelExpression();
+    while (match({TokenType::And, TokenType::Or}))
+    {
+        Token op = currentToken;
+        advance();
+        std::unique_ptr<ExpressionNode> right = parseRelExpression();
+        left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
+    }
+    return left;
+}
+
+// RelExpression   = Expression, RelExpression'
+std::unique_ptr<ExpressionNode> Parser::parseRelExpression()
+{
+    std::unique_ptr<ExpressionNode> left = parseSimpleExpression();
+    while (match({TokenType::Equal, TokenType::NotEqual, TokenType::Greater,
+                  TokenType::GreaterEqual, TokenType::Less, TokenType::LessEqual}))
+    {
+        Token op = advance();
+        std::unique_ptr<ExpressionNode> right = parseSimpleExpression();
+        left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
+    }
+    return left;
+}
+
+// SimpleExpression = Term SimpleExpression'
+std::unique_ptr<ExpressionNode> Parser::parseSimpleExpression()
+{
+    std::unique_ptr<ExpressionNode> left = parseTerm();
+    while (match({TokenType::Plus, TokenType::Minus, TokenType::Pipe, TokenType::AtAt}))
+    {
+        Token op = advance();
+        std::unique_ptr<ExpressionNode> right = parseTerm();
+        left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
+    }
+    return left;
+}
+
+// Term = Factor Term'
+std::unique_ptr<ExpressionNode> Parser::parseTerm()
+{
+    std::unique_ptr<ExpressionNode> left = parseFactor();
+    while (match({TokenType::Star, TokenType::Slash}))
+    {
+        Token op = advance();
+        std::unique_ptr<ExpressionNode> right = parseFactor();
+        left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
+    }
+    return left;
+}
+
+// Factor = BaseFactor PossibleCallArguments ;
+std::unique_ptr<ExpressionNode> Parser::parseFactor()
+{
+    std::unique_ptr<ExpressionNode> expr = parseBaseFactor();
+    expr = parsePossibleCallArguments(std::move(expr));
+    return expr;
+}
+
+// PossibleCallArguments = { CallArguments } ;
+std::unique_ptr<ExpressionNode> Parser::parsePossibleCallArguments(
+    std::unique_ptr<ExpressionNode> expr)
+{
+    while (check(TokenType::LParen))
+    {
+        expr = parseFunctionCall(std::move(expr));
+    }
+    return expr;
+}
+
+// BaseFactor = Number | LiteralString | id | “(“, Expression, “)” | FunctionLiteral;
 std::unique_ptr<ExpressionNode> Parser::parseBaseFactor()
 {
     if (match({TokenType::Number}))
@@ -346,6 +383,7 @@ std::unique_ptr<ExpressionNode> Parser::parseBaseFactor()
     throw error("Expected an expression");
 }
 
+// FunctionLiteral = "fun", "(", [ Parameters ], ")", StatementBlock ;
 std::unique_ptr<FunctionLiteralNode> Parser::parseFunctionLiteral()
 {
     Token funToken = consume(TokenType::Fun, "Expected 'fun'");
