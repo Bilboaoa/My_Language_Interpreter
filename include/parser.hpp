@@ -15,7 +15,7 @@ class Parser
     explicit Parser(Lexer& lexer);
     std::unique_ptr<ProgramNode> parseProgram();
 
-   private:
+   protected:
     Lexer& lexer;
     Token currentToken;
 

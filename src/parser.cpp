@@ -61,6 +61,10 @@ std::unique_ptr<ProgramNode> Parser::parseProgram()
         {
             declarations.push_back(parseDeclaration());
         }
+        else
+        {
+            throw error("Unexpected token in between declarations");
+        }
     }
     return std::make_unique<ProgramNode>(std::move(declarations));
 }
@@ -118,7 +122,7 @@ std::unique_ptr<StatementBlockNode> Parser::parseStatementBlock()
 // Statement = IdOrCallAssign | IfStatement | Declaration, “;” | ReturnStatement, “;” |
 // WhileStatement;
 std::unique_ptr<StatementNode> Parser::parseStatement()
-{
+{ // zmienic zeby to parseIfStatement sprawdzalo tokentype::if
     if (check(TokenType::If))
     {
         return parseIfStatement();
@@ -254,7 +258,7 @@ std::vector<std::unique_ptr<ExpressionNode>> Parser::parseArgumentList()
     return args;
 }
 
-// Expression = SimpleExpression | TypeCastExpression | FunctionLiteral;
+// Expression = TypeCastExpression | FunctionLiteral;
 std::unique_ptr<ExpressionNode> Parser::parseExpression()
 {
     if (check(TokenType::Fun))
