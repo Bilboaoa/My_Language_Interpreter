@@ -22,6 +22,7 @@ class Parser
     Token advance();
     bool check(TokenType type) const;
     bool match(std::vector<TokenType>);
+    bool isIn(std::vector<TokenType>) const;
     Token consume(TokenType type, const std::string& errorMessage);
     InterpreterException error(const std::string& message) const;
 

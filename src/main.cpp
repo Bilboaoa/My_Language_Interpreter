@@ -3,14 +3,6 @@
 #include <variant>
 #include "parser.hpp"
 
-struct PrintVisitor
-{
-    void operator()(std::monostate) const { std::cout << "null"; }
-    void operator()(int val) const { std::cout << val; }
-    void operator()(float val) const { std::cout << val; }
-    void operator()(const std::string& val) const { std::cout << "\"" << val << "\""; }
-};
-
 int main(int argc, char** argv)
 {
     if (argc < 2)
@@ -29,6 +21,6 @@ int main(int argc, char** argv)
     Parser parser(lexer);
 
     std::unique_ptr<ProgramNode> program = parser.parseProgram();
-
+    std::cout << program->toStr(0) << std::endl;
     return 0;
 }

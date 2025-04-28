@@ -6,6 +6,7 @@ add_executable(integration_tests
     ../../include/position.hpp
     ../../src/parser.cpp
     ../../include/asTree.hpp
+    ../../src/asTree.cpp
 )
 
 target_include_directories(integration_tests PRIVATE

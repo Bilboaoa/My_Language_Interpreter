@@ -21,6 +21,7 @@ class AstNode
    public:
     virtual ~AstNode() = default;
     virtual Position getStartPosition() const = 0;
+    virtual std::string toStr(int indent = 0) const = 0;
 };
 
 class ExpressionNode : public AstNode
@@ -33,8 +34,10 @@ class NumberLiteralNode : public ExpressionNode
     Token token;
     NumberLiteralNode(Token token) : token(token) {}
     Position getStartPosition() const override { return token.startPosition; }
-    int getValueInt() const { return token.getValue<int>(); }
-    float getValueFloat() const { return token.getValue<float>(); }
+    std::string toStr(int indent = 0) const override;
+    std::variant<std::monostate, std::string, int, float> getValue() const {
+        return token.value;
+    }
 };
 
 class StringLiteralNode : public ExpressionNode
@@ -43,6 +46,7 @@ class StringLiteralNode : public ExpressionNode
     Token token;
     StringLiteralNode(Token token) : token(token) {}
     Position getStartPosition() const override { return token.startPosition; }
+    std::string toStr(int indent = 0) const override;
     std::string getValue() const { return token.getValue<std::string>(); }
 };
 
@@ -52,6 +56,7 @@ class IdentifierNode : public ExpressionNode
     Token token;
     IdentifierNode(Token token) : token(token) {}
     Position getStartPosition() const override { return token.startPosition; }
+    std::string toStr(int indent = 0) const override;
     std::string getName() const { return token.getValue<std::string>(); }
 };
 
@@ -67,6 +72,7 @@ class BinaryOpNode : public ExpressionNode
     {
     }
     Position getStartPosition() const override { return left->getStartPosition(); }
+    std::string toStr(int indent = 0) const override;
 };
 
 class TypeCastNode : public ExpressionNode
@@ -79,6 +85,7 @@ class TypeCastNode : public ExpressionNode
     {
     }
     Position getStartPosition() const override { return expression->getStartPosition(); }
+    std::string toStr(int indent = 0) const override;
     TokenType getTargetType() const { return typeToken.type; }
 };
 
@@ -93,6 +100,7 @@ class FunctionCallNode : public ExpressionNode
     {
     }
     Position getStartPosition() const override { return callee->getStartPosition(); }
+    std::string toStr(int indent = 0) const override;
 };
 
 class StatementNode : public AstNode
@@ -110,6 +118,7 @@ class ExpressionStatementNode : public StatementNode
     }
 
     Position getStartPosition() const override { return expression->getStartPosition(); }
+    std::string toStr(int indent = 0) const override;
 };
 
 class StatementBlockNode : public StatementNode
@@ -126,6 +135,7 @@ class StatementBlockNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return lBracketToken.startPosition; }
+    std::string toStr(int indent) const override;
 };
 
 class FunctionDeclarationNode : public AstNode
@@ -140,6 +150,7 @@ class FunctionDeclarationNode : public AstNode
     {
     }
     Position getStartPosition() const override { return name.startPosition; }
+    std::string toStr(int indent) const override;
 };
 
 class FunctionLiteralNode : public ExpressionNode
@@ -160,6 +171,7 @@ class FunctionLiteralNode : public ExpressionNode
     {
     }
     Position getStartPosition() const override { return funToken.startPosition; }
+    std::string toStr(int indent) const override;
 };
 
 class IfStatementNode : public StatementNode
@@ -186,6 +198,7 @@ class IfStatementNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return ifToken.startPosition; }
+    std::string toStr(int indent) const override;
 };
 
 class DeclarationNode : public StatementNode
@@ -206,6 +219,7 @@ class DeclarationNode : public StatementNode
     }
     Position getStartPosition() const override { return typeModifierToken.startPosition; }
     std::string getIdentifierName() const { return identifierToken.getValue<std::string>(); }
+    std::string toStr(int indent) const override;
 };
 
 class ReturnStatementNode : public StatementNode
@@ -218,6 +232,7 @@ class ReturnStatementNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return returnToken.startPosition; }
+    std::string toStr(int indent) const override;
 };
 
 class AssignNode : public StatementNode
@@ -233,6 +248,7 @@ class AssignNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return identifierToken.startPosition; }
+    std::string toStr(int indent) const override;
     std::string getIdentifierName() const { return identifierToken.getValue<std::string>(); }
 };
 
@@ -255,6 +271,7 @@ class WhileStatementNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return whileToken.startPosition; }
+    std::string toStr(int indent) const override;
 };
 
 class ProgramNode : public AstNode
@@ -269,4 +286,5 @@ class ProgramNode : public AstNode
     {
         return declarations.empty() ? Position() : declarations.front()->getStartPosition();
     }
+    std::string toStr(int indent) const override;
 };
