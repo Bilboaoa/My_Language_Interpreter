@@ -35,9 +35,7 @@ class NumberLiteralNode : public ExpressionNode
     NumberLiteralNode(Token token) : token(token) {}
     Position getStartPosition() const override { return token.startPosition; }
     std::string toStr(int indent = 0) const override;
-    std::variant<std::monostate, std::string, int, float> getValue() const {
-        return token.value;
-    }
+    std::variant<std::monostate, std::string, int, float> getValue() const { return token.value; }
 };
 
 class StringLiteralNode : public ExpressionNode
