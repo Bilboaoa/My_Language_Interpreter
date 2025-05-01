@@ -99,6 +99,8 @@ Token Lexer::tryBuildIdentifier()
     auto found = keywords.find(ident);
     if (found != keywords.end())
     {
+        if (found->second == TokenType::Type)
+            return Token(TokenType::Type, ident, startPos);
         return Token(found->second, startPos);
     }
 
