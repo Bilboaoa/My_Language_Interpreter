@@ -57,6 +57,7 @@ InterpreterException Parser::error(const std::string& message) const
     return InterpreterException(ErrorType::Semantic, message, currentToken.startPosition);
 }
 
+// Program         = { FunctionDeclaration | Declaration };
 std::unique_ptr<ProgramNode> Parser::parseProgram()
 {
     std::vector<std::unique_ptr<AstNode>> declarations;
@@ -92,6 +93,7 @@ std::unique_ptr<FunctionDeclarationNode> Parser::parseFunctionDeclaration()
 }
 
 // Parameters = Parameter, {“,”, Parameter }
+// Parameter       = (“const” | “var”), id ;
 std::vector<FuncDefArgument> Parser::parseParameters()
 {
     std::vector<FuncDefArgument> params;
@@ -133,7 +135,7 @@ std::unique_ptr<StatementBlockNode> Parser::parseStatementBlock()
 // Statement = IdOrCallAssign | IfStatement | Declaration, “;” | ReturnStatement, “;” |
 // WhileStatement;
 std::unique_ptr<StatementNode> Parser::parseStatement()
-{  // zmienic zeby to parseIfStatement sprawdzalo tokentype::if
+{
     if (auto ifStatement = parseIfStatement())
     {
         return ifStatement;
@@ -194,7 +196,7 @@ std::unique_ptr<WhileStatementNode> Parser::parseWhileStatement()
                                                 currentToken, std::move(body));
 }
 
-// ReturnStatement = “return”, ( Expression | FunctionLiteral );
+// ReturnStatement = “return”, [ Expression ];
 std::unique_ptr<ReturnStatementNode> Parser::parseReturnStatement()
 {
     if (!check(TokenType::Return)) return nullptr;
@@ -253,7 +255,6 @@ std::unique_ptr<StatementNode> Parser::parsePossibleAssignOrCall(Token idToken)
         consume(TokenType::Semicolon, "No semicolan after call");
         return node;
     }
-    // TODO: poprawić default
     return nullptr;
 }
 
@@ -310,7 +311,7 @@ std::unique_ptr<ExpressionNode> Parser::parseTypeCastExpression(
     return expr;
 }
 
-// LogicalExpr   = RelExpression, LogicalExpr'
+// LogicalExpr   = RelExpression, { LogicalExpr, RelExpression } ;
 std::unique_ptr<ExpressionNode> Parser::parseLogicalExpr()
 {
     std::unique_ptr<ExpressionNode> left = parseRelExpression();
@@ -323,7 +324,7 @@ std::unique_ptr<ExpressionNode> Parser::parseLogicalExpr()
     return left;
 }
 
-// RelExpression   = Expression, RelExpression'
+// RelExpression   = Expression, { RelOperator, Expression } ;
 std::unique_ptr<ExpressionNode> Parser::parseRelExpression()
 {
     std::unique_ptr<ExpressionNode> left = parseSimpleExpression();
@@ -337,7 +338,7 @@ std::unique_ptr<ExpressionNode> Parser::parseRelExpression()
     return left;
 }
 
-// SimpleExpression = Term SimpleExpression'
+// SimpleExpression  = Term, {("+" | "-" | "|" | "@@"), Term ;
 std::unique_ptr<ExpressionNode> Parser::parseSimpleExpression()
 {
     std::unique_ptr<ExpressionNode> left = parseTerm();
@@ -350,7 +351,7 @@ std::unique_ptr<ExpressionNode> Parser::parseSimpleExpression()
     return left;
 }
 
-// Term = Factor Term'
+// Term      = Factor, { (“*” | “/”) Factor }
 std::unique_ptr<ExpressionNode> Parser::parseTerm()
 {
     std::unique_ptr<ExpressionNode> left = parseFactor();
