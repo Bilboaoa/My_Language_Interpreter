@@ -6,6 +6,6 @@ fun example()
 fun main()
 [
 	var my_fun = example();
-    var my_fun(1, 2);
+    my_fun(1, 2);
 	return 0;
 ]

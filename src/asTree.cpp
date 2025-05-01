@@ -228,7 +228,7 @@ std::string AssignNode::toStr(int indent) const
 
 std::string WhileStatementNode::toStr(int indent) const
 {
-    return std::string(indent, ' ') + "while (" + condition->toStr(indent + 1) + ") " +
+    return std::string(indent, ' ') + "While (" + condition->toStr(indent + 1) + ")\n" +
            body->toStr(indent + 1);
 }
 

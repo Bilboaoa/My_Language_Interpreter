@@ -19,7 +19,6 @@ enum class TokenType
     Else,
     While,
     As,
-    Print,
 
     // Operators
     Plus,

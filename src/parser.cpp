@@ -69,7 +69,7 @@ std::unique_ptr<ProgramNode> Parser::parseProgram()
         }
         else if (auto declaration = parseDeclaration())
         {
-            consume(TokenType::Semicolon, "Expected ';' after declaration");
+            consume(TokenType::Semicolon, "Expected ';' after declaration while parsing program");
             declarations.push_back(std::move(declaration));
         }
         else
@@ -281,34 +281,19 @@ std::vector<std::unique_ptr<ExpressionNode>> Parser::parseArgumentList()
     return args;
 }
 
-// Expression = TypeCastExpression | FunctionLiteral;
+// Expression = TypeCastExpression ;
+// TypeCastExpression = SimpleExpression, { “as”, Type } ;
 std::unique_ptr<ExpressionNode> Parser::parseExpression()
 {
-    if (check(TokenType::Fun))
-    {
-        return parseFunctionLiteral();
-    }
-
     std::unique_ptr<ExpressionNode> left = parseSimpleExpression();
 
-    if (check(TokenType::As))
+    while (match({TokenType::As}))
     {
-        return parseTypeCastExpression(std::move(left));
+        Token type = consume(TokenType::Type, "Expected a type");
+        left = std::make_unique<TypeCastNode>(std::move(left), type);
     }
 
     return left;
-}
-
-// TypeCastExpression = Expression, “as”, Type ;
-std::unique_ptr<ExpressionNode> Parser::parseTypeCastExpression(
-    std::unique_ptr<ExpressionNode> expr)
-{
-    if (match({TokenType::As}))
-    {
-        Token type = consume(TokenType::Type, "Expected a type");
-        return std::make_unique<TypeCastNode>(std::move(expr), type);
-    }
-    return expr;
 }
 
 // LogicalExpr   = RelExpression, { LogicalExpr, RelExpression } ;
@@ -408,9 +393,9 @@ std::unique_ptr<ExpressionNode> Parser::parseBaseFactor()
         consume(TokenType::RParen, "Expected ')'");
         return expr;
     }
-    if (check(TokenType::Fun))
+    if (auto funcLiteral = parseFunctionLiteral())
     {
-        return parseFunctionLiteral();
+        return funcLiteral;
     }
     throw error("Expected an expression");
 }
@@ -418,6 +403,7 @@ std::unique_ptr<ExpressionNode> Parser::parseBaseFactor()
 // FunctionLiteral = "fun", "(", [ Parameters ], ")", StatementBlock ;
 std::unique_ptr<FunctionLiteralNode> Parser::parseFunctionLiteral()
 {
+    if (!check(TokenType::Fun)) return nullptr;
     Token funToken = consume(TokenType::Fun, "Expected 'fun'");
     Token lParenToken = consume(TokenType::LParen, "Expected '('");
     std::vector<FuncDefArgument> parameters = parseParameters();
