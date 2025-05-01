@@ -11,7 +11,7 @@ const std::unordered_map<std::string, TokenType> keywords = {
     {"int", TokenType::Type},      {"float", TokenType::Type},  {"string", TokenType::Type},
     {"var", TokenType::Var},       {"const", TokenType::Const}, {"fun", TokenType::Fun},
     {"return", TokenType::Return}, {"if", TokenType::If},       {"else", TokenType::Else},
-    {"while", TokenType::While},   {"as", TokenType::As},       {"print", TokenType::Print}};
+    {"while", TokenType::While},   {"as", TokenType::As}};
 
 int digit_to_int(char digit)
 {

@@ -32,8 +32,6 @@ std::string tokenTypeToString(TokenType type)
             return "While";
         case TokenType::As:
             return "As";
-        case TokenType::Print:
-            return "Print";
         case TokenType::Plus:
             return "Plus";
         case TokenType::Minus:
@@ -122,8 +120,7 @@ std::string BinaryOpNode::toStr(int indent) const
 
 std::string TypeCastNode::toStr(int indent) const
 {
-    return std::string(indent, ' ') + "(" + expression->toStr(indent + 1) + " as " +
-           tokenTypeToString(typeToken.type) + ")";
+    return expression->toStr(indent + 1) + " As " + typeToken.getValue<std::string>();
 }
 
 std::string FunctionCallNode::toStr(int indent) const
