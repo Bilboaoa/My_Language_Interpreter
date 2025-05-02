@@ -246,7 +246,7 @@ std::unique_ptr<StatementNode> Parser::parsePossibleAssignOrCall(Token idToken)
         consume(TokenType::Semicolon, "No semicolan after assign");
         return assigned;
     }
-    
+
     std::unique_ptr<ExpressionNode> callee = std::make_unique<IdentifierNode>(idToken);
     std::unique_ptr<ExpressionNode> call = parseFunctionCall(std::move(callee));
     std::unique_ptr<ExpressionStatementNode> node =

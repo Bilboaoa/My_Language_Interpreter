@@ -258,7 +258,8 @@ TEST_CASE("Test function declaration with empty return", "[parser][function][ass
     REQUIRE(programString == expected);
 }
 
-TEST_CASE("Test missing function body", "[parser][error]") {
+TEST_CASE("Test missing function body", "[parser][error]")
+{
     ParserTester parserTester("fun a()");
     REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(), "SemanticError at 1:8 → Expected '['");
 }
@@ -278,13 +279,15 @@ TEST_CASE("Test function call within return", "[parser][function][return][call]"
 
 TEST_CASE("Test complex expression within return", "[parser][function][return][call]")
 {
-    ParserTester parserTester("fun a() [var c=2;return c;] \nfun b()[var q = 1;\nreturn (a() * q) / 10;]");
+    ParserTester parserTester(
+        "fun a() [var c=2;return c;] \nfun b()[var q = 1;\nreturn (a() * q) / 10;]");
     auto program = parserTester.parser.parseProgram();
     REQUIRE(program != nullptr);
     REQUIRE(program->declarations.size() == 2);
 
     std::string expected =
-        "Fun a()\n [\n  Var c = 2;\n  return c;\n ]\nFun b()\n [\n  Var q = 1;\n  return a() Star q Slash 10;\n ]\n";
+        "Fun a()\n [\n  Var c = 2;\n  return c;\n ]\nFun b()\n [\n  Var q = 1;\n  return a() Star "
+        "q Slash 10;\n ]\n";
     std::string programString = program->toStr(0);
     REQUIRE(programString == expected);
 }
@@ -302,7 +305,8 @@ TEST_CASE("Test function call within assign", "[parser][function][assign][call]"
     REQUIRE(programString == expected);
 }
 
-TEST_CASE("Test function call with complex arguments", "[parser][function][call]") {
+TEST_CASE("Test function call with complex arguments", "[parser][function][call]")
+{
     ParserTester parserTester("fun a() [var x = b(1+2, c(3), 4);]");
     auto program = parserTester.parser.parseProgram();
     std::string expected = R"(Fun a()
@@ -313,7 +317,8 @@ TEST_CASE("Test function call with complex arguments", "[parser][function][call]
     REQUIRE(program->toStr(0) == expected);
 }
 
-TEST_CASE("Test function call as statement", "[parser][function][call]") {
+TEST_CASE("Test function call as statement", "[parser][function][call]")
+{
     ParserTester parserTester("fun a() [b(1);]");
     auto program = parserTester.parser.parseProgram();
     std::string expected = R"(Fun a()
@@ -445,7 +450,8 @@ TEST_CASE("Test declaration with assigned string concatination", "[parser][Plus]
     REQUIRE(programString == expected);
 }
 
-TEST_CASE("Test nested arithmetic expressions", "[parser][arithmetic]") {
+TEST_CASE("Test nested arithmetic expressions", "[parser][arithmetic]")
+{
     ParserTester parserTester("fun a() [var x = 1 + 2 * 3 / 4 - 5;]");
     auto program = parserTester.parser.parseProgram();
     REQUIRE(program != nullptr);
@@ -459,7 +465,8 @@ TEST_CASE("Test nested arithmetic expressions", "[parser][arithmetic]") {
     REQUIRE(programString == expected);
 }
 
-TEST_CASE("Test nested arithmetic expressions with parentheses", "[parser][arithmetic]") {
+TEST_CASE("Test nested arithmetic expressions with parentheses", "[parser][arithmetic]")
+{
     ParserTester parserTester("fun a() [var x = 1 + (2 * 3) / 4 - 5;]");
     auto program = parserTester.parser.parseProgram();
     REQUIRE(program != nullptr);
@@ -473,7 +480,8 @@ TEST_CASE("Test nested arithmetic expressions with parentheses", "[parser][arith
     REQUIRE(programString == expected);
 }
 
-TEST_CASE("Test complex expression with 2 parentheses", "[parser][expression]") {
+TEST_CASE("Test complex expression with 2 parentheses", "[parser][expression]")
+{
     ParserTester parserTester("fun a() [var x = (1 + 2) * (3 - 4);]");
     auto program = parserTester.parser.parseProgram();
     std::string expected = R"(Fun a()
@@ -484,7 +492,8 @@ TEST_CASE("Test complex expression with 2 parentheses", "[parser][expression]") 
     REQUIRE(program->toStr(0) == expected);
 }
 
-TEST_CASE("Test complex expression as statement", "[parser][expression]") {
+TEST_CASE("Test complex expression as statement", "[parser][expression]")
+{
     ParserTester parserTester("fun a() [(1 + 2) * (3 - 4);]");
     auto program = parserTester.parser.parseProgram();
     std::string expected = R"(Fun a()
@@ -495,7 +504,8 @@ TEST_CASE("Test complex expression as statement", "[parser][expression]") {
     REQUIRE(program->toStr(0) == expected);
 }
 
-TEST_CASE("Test nested arithmetic expressions with parentheses at start", "[parser][arithmetic]") {
+TEST_CASE("Test nested arithmetic expressions with parentheses at start", "[parser][arithmetic]")
+{
     ParserTester parserTester("fun a() [var x = (1 + 2) * 3 / 4 - 5;]");
     auto program = parserTester.parser.parseProgram();
     REQUIRE(program != nullptr);
@@ -805,7 +815,8 @@ TEST_CASE("Test If with or", "[parser][If][or]")
     REQUIRE(programString == expected);
 }
 
-TEST_CASE("Test empty if statement", "[parser][if]") {
+TEST_CASE("Test empty if statement", "[parser][if]")
+{
     ParserTester parserTester("fun a() [if(1<2)[]]");
     auto program = parserTester.parser.parseProgram();
     REQUIRE(program != nullptr);
@@ -839,7 +850,6 @@ TEST_CASE("Test If with more advanced logic", "[parser][If][or][and]")
     std::string programString = program->toStr(0);
     REQUIRE(programString == expected);
 }
-
 
 TEST_CASE("Test basic While", "[parser][While][Less]")
 {
@@ -1047,7 +1057,8 @@ TEST_CASE("Test while with or", "[parser][while][or]")
     REQUIRE(programString == expected);
 }
 
-TEST_CASE("Test empty while statement", "[parser][while]") {
+TEST_CASE("Test empty while statement", "[parser][while]")
+{
     ParserTester parserTester("fun a() [while(1<2)[]]");
     auto program = parserTester.parser.parseProgram();
     REQUIRE(program != nullptr);
@@ -1063,32 +1074,42 @@ TEST_CASE("Test empty while statement", "[parser][while]") {
     REQUIRE(programString == expected);
 }
 
-TEST_CASE("Test missing semicolon after declaration", "[parser][error]") {
+TEST_CASE("Test missing semicolon after declaration", "[parser][error]")
+{
     ParserTester parserTester("var x");
-    REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(), "SemanticError at 1:6 → Expected ';' after declaration while parsing program");
+    REQUIRE_THROWS_WITH(
+        parserTester.parser.parseProgram(),
+        "SemanticError at 1:6 → Expected ';' after declaration while parsing program");
 }
 
-TEST_CASE("Test missing parenthesis in function declaration", "[parser][error]") {
+TEST_CASE("Test missing parenthesis in function declaration", "[parser][error]")
+{
     ParserTester parserTester("fun a) []");
     REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(), "SemanticError at 1:6 → Expected '('");
 }
 
-TEST_CASE("Test invalid type in cast", "[parser][error][cast]") {
+TEST_CASE("Test invalid type in cast", "[parser][error][cast]")
+{
     ParserTester parserTester("fun a() [var x = 1 as invalidType;]");
-    REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(), "SemanticError at 1:23 → Expected a type");
+    REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(),
+                        "SemanticError at 1:23 → Expected a type");
 }
 
-TEST_CASE("Test invalid expression after operator", "[parser][error]") {
+TEST_CASE("Test invalid expression after operator", "[parser][error]")
+{
     ParserTester parserTester("fun a() [var x = 1 + ;]");
-    REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(), "SemanticError at 1:22 → Expected an expression");
+    REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(),
+                        "SemanticError at 1:22 → Expected an expression");
 }
 
-TEST_CASE("Test missing right bracket in statement block", "[parser][error]") {
+TEST_CASE("Test missing right bracket in statement block", "[parser][error]")
+{
     ParserTester parserTester("fun a() [var x = 1;");
     REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(), "SemanticError at 1:20 → Expected ']'");
 }
 
-TEST_CASE("Test missing left bracket in statement block", "[parser][error]") {
+TEST_CASE("Test missing left bracket in statement block", "[parser][error]")
+{
     ParserTester parserTester("fun a() var x = 1;]");
     REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(), "SemanticError at 1:9 → Expected '['");
 }

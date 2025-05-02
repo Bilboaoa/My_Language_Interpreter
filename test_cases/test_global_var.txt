@@ -1,8 +1,8 @@
-const var global_var = 10;
+const global_var = 10;
 
 fun example()
 [
-	const var global_var = "abc";
+	const global_var = "abc";
 ]
 
 fun main()
