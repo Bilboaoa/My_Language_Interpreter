@@ -21,24 +21,16 @@ bool Parser::check(TokenType type) const
     return currentToken.type == type;
 }
 
-bool Parser::match(std::vector<TokenType> types)
+bool Parser::match(std::vector<TokenType> types, bool consume)
 {
     for (TokenType type : types)
     {
         if (check(type))
         {
-            advance();
+            if (consume)
+                advance();
             return true;
         }
-    }
-    return false;
-}
-
-bool Parser::isIn(std::vector<TokenType> types) const
-{
-    for (TokenType type : types)
-    {
-        if (check(type)) return true;
     }
     return false;
 }
@@ -114,7 +106,7 @@ std::vector<FuncDefArgument> Parser::parseParameters()
                 throw error("Expected 'const' or 'var'");
             Token tmpId = consume(TokenType::Identifier, "Expected param's name");
             params.push_back(FuncDefArgument{tmp, tmpId});
-        } while (match({TokenType::Comma}));
+        } while (match({TokenType::Comma}, true));
     }
     return params;
 }
@@ -174,7 +166,7 @@ std::unique_ptr<IfStatementNode> Parser::parseIfStatement()
     consume(TokenType::RParen, "Expected ')'");
     std::unique_ptr<StatementBlockNode> thenBranch = parseStatementBlock();
     std::unique_ptr<StatementBlockNode> elseBranch = nullptr;
-    if (match({TokenType::Else}))
+    if (match({TokenType::Else}, true))
     {
         elseBranch = parseStatementBlock();
     }
@@ -220,7 +212,7 @@ std::unique_ptr<DeclarationNode> Parser::parseDeclaration()
         modifier = consume(TokenType::Var, "Expected 'var'");
     Token name = consume(TokenType::Identifier, "Expected variable's name");
     std::unique_ptr<ExpressionNode> initializer = nullptr;
-    if (match({TokenType::Assign}))
+    if (match({TokenType::Assign}, true))
     {
         initializer = parseExpression();
     }
@@ -238,7 +230,7 @@ std::unique_ptr<StatementNode> Parser::parseIdOrCallAssign()
 // PossibleAssignOrCall = "=" Expression ";" | [ CallArguments ] ";" ;
 std::unique_ptr<StatementNode> Parser::parsePossibleAssignOrCall(Token idToken)
 {
-    if (match({TokenType::Assign}))
+    if (match({TokenType::Assign}, true))
     {
         std::unique_ptr<ExpressionNode> expr = parseExpression();
         std::unique_ptr<AssignNode> assigned =
@@ -273,7 +265,7 @@ std::vector<std::unique_ptr<ExpressionNode>> Parser::parseArgumentList()
         do
         {
             args.push_back(parseExpression());
-        } while (match({TokenType::Comma}));
+        } while (match({TokenType::Comma}, true));
     }
     return args;
 }
@@ -284,7 +276,7 @@ std::unique_ptr<ExpressionNode> Parser::parseExpression()
 {
     std::unique_ptr<ExpressionNode> left = parseSimpleExpression();
 
-    while (match({TokenType::As}))
+    while (match({TokenType::As}, true))
     {
         Token type = consume(TokenType::Type, "Expected a type");
         left = std::make_unique<TypeCastNode>(std::move(left), type);
@@ -297,7 +289,7 @@ std::unique_ptr<ExpressionNode> Parser::parseExpression()
 std::unique_ptr<ExpressionNode> Parser::parseLogicalExpr()
 {
     std::unique_ptr<ExpressionNode> left = parseRelExpression();
-    while (isIn({TokenType::And, TokenType::Or}))
+    while (match({TokenType::And, TokenType::Or}))
     {
         Token op = advance();
         std::unique_ptr<ExpressionNode> right = parseRelExpression();
@@ -310,7 +302,7 @@ std::unique_ptr<ExpressionNode> Parser::parseLogicalExpr()
 std::unique_ptr<ExpressionNode> Parser::parseRelExpression()
 {
     std::unique_ptr<ExpressionNode> left = parseSimpleExpression();
-    while (isIn({TokenType::Equal, TokenType::NotEqual, TokenType::Greater, TokenType::GreaterEqual,
+    while (match({TokenType::Equal, TokenType::NotEqual, TokenType::Greater, TokenType::GreaterEqual,
                  TokenType::Less, TokenType::LessEqual}))
     {
         Token op = advance();
@@ -324,7 +316,7 @@ std::unique_ptr<ExpressionNode> Parser::parseRelExpression()
 std::unique_ptr<ExpressionNode> Parser::parseSimpleExpression()
 {
     std::unique_ptr<ExpressionNode> left = parseTerm();
-    while (isIn({TokenType::Plus, TokenType::Minus, TokenType::Pipe, TokenType::AtAt}))
+    while (match({TokenType::Plus, TokenType::Minus, TokenType::Pipe, TokenType::AtAt}))
     {
         Token op = advance();
         std::unique_ptr<ExpressionNode> right = parseTerm();
@@ -337,7 +329,7 @@ std::unique_ptr<ExpressionNode> Parser::parseSimpleExpression()
 std::unique_ptr<ExpressionNode> Parser::parseTerm()
 {
     std::unique_ptr<ExpressionNode> left = parseFactor();
-    while (isIn({TokenType::Star, TokenType::Slash}))
+    while (match({TokenType::Star, TokenType::Slash}))
     {
         Token op = advance();
         std::unique_ptr<ExpressionNode> right = parseFactor();
