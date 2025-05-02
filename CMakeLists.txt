@@ -4,6 +4,13 @@ project(MyInterpreter LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(ENABLE_COVERAGE "Enable code coverage" OFF)
+if(ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    message(STATUS "Enabling code coverage")
+    add_compile_options(-fprofile-arcs -ftest-coverage)
+    add_link_options(--coverage)
+endif()
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 
 add_executable(bibl ${SOURCES})
@@ -26,3 +33,18 @@ FetchContent_MakeAvailable(Catch2)
 
 enable_testing()
 add_subdirectory(test)
+
+
+if(ENABLE_COVERAGE)
+    find_program(LCOV_PATH lcov REQUIRED)
+    find_program(GENHTML_PATH genhtml REQUIRED)
+    
+    add_custom_target(coverage
+        COMMAND ${LCOV_PATH} --capture --directory . --output-file coverage.info --ignore-errors source
+        COMMAND ${LCOV_PATH} --remove coverage.info '*/test/*' '*/_deps/*' '*/usr/include/*' --output-file coverage-filtered.info
+        COMMAND ${GENHTML_PATH} coverage-filtered.info --output-directory coverage_report
+        COMMAND ${CMAKE_COMMAND} -E echo "Coverage report: file://${CMAKE_BINARY_DIR}/coverage_report/index.html"
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        DEPENDS bibl test
+    )
+endif()
