@@ -35,7 +35,7 @@ class Parser
     std::unique_ptr<DeclarationNode> parseDeclaration();
 
     std::unique_ptr<StatementNode> parseIdOrCallAssign();
-    std::unique_ptr<StatementNode> parsePossibleAssignOrCall(Token idToken);
+    std::unique_ptr<StatementNode> parsePossibleAssignOrCall(std::string id);
     std::unique_ptr<ExpressionNode> parseFunctionCall(std::unique_ptr<ExpressionNode> callee);
     std::unique_ptr<ExpressionNode> parseExpression();
     std::unique_ptr<ExpressionNode> parseTypeCastExpression(std::unique_ptr<ExpressionNode> expr);

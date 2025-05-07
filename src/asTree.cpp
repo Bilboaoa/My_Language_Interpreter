@@ -8,30 +8,6 @@ std::string tokenTypeToString(TokenType type)
 {
     switch (type)
     {
-        case TokenType::Identifier:
-            return "Identifier";
-        case TokenType::Number:
-            return "Number";
-        case TokenType::StringLiteral:
-            return "StringLiteral";
-        case TokenType::Type:
-            return "Type";
-        case TokenType::Var:
-            return "Var";
-        case TokenType::Const:
-            return "Const";
-        case TokenType::Fun:
-            return "Fun";
-        case TokenType::Return:
-            return "Return";
-        case TokenType::If:
-            return "If";
-        case TokenType::Else:
-            return "Else";
-        case TokenType::While:
-            return "While";
-        case TokenType::As:
-            return "As";
         case TokenType::Plus:
             return "Plus";
         case TokenType::Minus:
@@ -62,24 +38,8 @@ std::string tokenTypeToString(TokenType type)
             return "And";
         case TokenType::Or:
             return "Or";
-        case TokenType::LParen:
-            return "LParen";
-        case TokenType::RParen:
-            return "RParen";
-        case TokenType::LBracket:
-            return "LBracket";
-        case TokenType::RBracket:
-            return "RBracket";
-        case TokenType::Semicolon:
-            return "Semicolon";
-        case TokenType::Comma:
-            return "Comma";
-        case TokenType::EndOfFile:
-            return "EndOfFile";
-        case TokenType::Unknown:
-            return "Unknown";
         default:
-            return "Unknown";
+            return "Wrong TokenType";
     }
 }
 }  // namespace
@@ -87,15 +47,15 @@ std::string tokenTypeToString(TokenType type)
 std::string NumberLiteralNode::toStr(int indent) const
 {
     indent += 1;
-    if (std::holds_alternative<int>(token.value))
+    if (std::holds_alternative<int>(value))
     {
-        return std::to_string(token.getValue<int>());
+        return std::to_string(std::get<int>(value));
     }
-    else if (std::holds_alternative<float>(token.value))
+    else if (std::holds_alternative<float>(value))
     {
-        return std::to_string(token.getValue<float>());
+        return std::to_string(std::get<float>(value));
     }
-    return "";
+    return "<unknown number>";
 }
 
 std::string StringLiteralNode::toStr(int indent) const
@@ -140,7 +100,8 @@ std::string FunctionCallNode::toStr(int indent) const
 
 std::string DeclarationNode::toStr(int indent) const
 {
-    std::string result = std::string(indent, ' ') + tokenTypeToString(typeModifierToken.type) +
+    std::string mod = modifier ? "Var" : "Const";
+    std::string result = std::string(indent, ' ') + mod +
                          " " + getIdentifierName();
     if (initializer)
     {
@@ -168,11 +129,12 @@ std::string StatementBlockNode::toStr(int indent) const
 
 std::string FunctionDeclarationNode::toStr(int indent) const
 {
-    std::string result = std::string(indent, ' ') + "Fun " + name.getValue<std::string>() + "(";
+    std::string result = std::string(indent, ' ') + "Fun " + name + "(";
     for (size_t i = 0; i < params.size(); ++i)
     {
-        result += tokenTypeToString(params[i].modifierToken.type) + " " +
-                  params[i].id.getValue<std::string>();
+        std::string mod = params[i].modifier ? "Var" : "Const";
+        result += mod + " " +
+                  params[i].id;
         if (i < params.size() - 1)
         {
             result += ", ";
@@ -187,8 +149,9 @@ std::string FunctionLiteralNode::toStr(int indent) const
     std::string result = "Fun(";
     for (size_t i = 0; i < parameters.size(); ++i)
     {
-        result += tokenTypeToString(parameters[i].modifierToken.type) + " " +
-                  parameters[i].id.getValue<std::string>();
+        std::string mod = parameters[i].modifier ? "Var" : "Const";
+        result += mod + " " +
+                  parameters[i].id;
         if (i < parameters.size() - 1)
         {
             result += ", ";
@@ -222,7 +185,7 @@ std::string ReturnStatementNode::toStr(int indent) const
 
 std::string AssignNode::toStr(int indent) const
 {
-    return std::string(indent, ' ') + identifierToken.getValue<std::string>() + " = " +
+    return std::string(indent, ' ') + identifier + " = " +
            expression->toStr(indent + 1) + ";";
 }
 

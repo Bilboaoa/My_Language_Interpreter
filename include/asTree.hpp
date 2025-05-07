@@ -9,8 +9,8 @@
 
 struct FuncDefArgument
 {
-    Token modifierToken;
-    Token id;
+    bool modifier;
+    std::string id;
 };
 
 class ExpressionNode;
@@ -31,31 +31,34 @@ class ExpressionNode : public AstNode
 class NumberLiteralNode : public ExpressionNode
 {
    public:
-    Token token;
-    NumberLiteralNode(Token token) : token(token) {}
-    Position getStartPosition() const override { return token.startPosition; }
+    std::variant<int, float> value;
+    Position pos;
+    NumberLiteralNode(std::variant<int, float> val, Position p) : value(val), pos(p) {}
+    Position getStartPosition() const override { return pos; }
     std::string toStr(int indent = 0) const override;
-    std::variant<std::monostate, std::string, int, float> getValue() const { return token.value; }
+    std::variant<int, float> getValue() const { return value; }
 };
 
 class StringLiteralNode : public ExpressionNode
 {
    public:
-    Token token;
-    StringLiteralNode(Token token) : token(token) {}
-    Position getStartPosition() const override { return token.startPosition; }
+    std::string val;
+    Position pos;
+    StringLiteralNode(std::string v, Position p) : val(v), pos(p) {}
+    Position getStartPosition() const override { return pos; }
     std::string toStr(int indent = 0) const override;
-    std::string getValue() const { return token.getValue<std::string>(); }
+    std::string getValue() const { return val; }
 };
 
 class IdentifierNode : public ExpressionNode
 {
    public:
-    Token token;
-    IdentifierNode(Token token) : token(token) {}
-    Position getStartPosition() const override { return token.startPosition; }
+    std::string name;
+    Position pos;
+    IdentifierNode(std::string n, Position p) : name(n), pos(p) {}
+    Position getStartPosition() const override { return pos; }
     std::string toStr(int indent = 0) const override;
-    std::string getName() const { return token.getValue<std::string>(); }
+    std::string getName() const { return name; }
 };
 
 class BinaryOpNode : public ExpressionNode
@@ -122,153 +125,130 @@ class ExpressionStatementNode : public StatementNode
 class StatementBlockNode : public StatementNode
 {
    public:
+    Position pos;
     std::vector<std::unique_ptr<StatementNode>> statements;
-    Token lBracketToken;
-    Token rBracketToken;
-    StatementBlockNode(Token lBracketToken, std::vector<std::unique_ptr<StatementNode>> statements,
-                       Token rBracketToken)
-        : statements(std::move(statements)),
-          lBracketToken(lBracketToken),
-          rBracketToken(rBracketToken)
+    StatementBlockNode(Position p, std::vector<std::unique_ptr<StatementNode>> statements)
+        : pos(p), statements(std::move(statements))
     {
     }
-    Position getStartPosition() const override { return lBracketToken.startPosition; }
+    Position getStartPosition() const override { return pos; }
     std::string toStr(int indent) const override;
 };
 
 class FunctionDeclarationNode : public AstNode
 {
    public:
-    Token name;
+    std::string name;
+    Position pos;
     std::vector<FuncDefArgument> params;
     std::unique_ptr<StatementBlockNode> body;
-    FunctionDeclarationNode(Token n, std::vector<FuncDefArgument> param,
+    FunctionDeclarationNode(std::string n, Position p, std::vector<FuncDefArgument> param,
                             std::unique_ptr<StatementBlockNode> bod)
-        : name(n), params(param), body(std::move(bod))
+        : name(n), pos(p), params(param), body(std::move(bod))
     {
     }
-    Position getStartPosition() const override { return name.startPosition; }
+    Position getStartPosition() const override { return pos; }
     std::string toStr(int indent) const override;
 };
 
 class FunctionLiteralNode : public ExpressionNode
 {
    public:
+    Position pos;
     std::vector<FuncDefArgument> parameters;
     std::unique_ptr<StatementBlockNode> body;
-    Token funToken;
-    Token lParenToken;
-    Token rParenToken;
-    FunctionLiteralNode(Token funToken, Token lParenToken, std::vector<FuncDefArgument> parameters,
-                        Token rParenToken, std::unique_ptr<StatementBlockNode> body)
-        : parameters(std::move(parameters)),
-          body(std::move(body)),
-          funToken(funToken),
-          lParenToken(lParenToken),
-          rParenToken(rParenToken)
+    FunctionLiteralNode(Position p, std::vector<FuncDefArgument> parameters,
+                        std::unique_ptr<StatementBlockNode> body)
+        : pos(p), parameters(std::move(parameters)),
+          body(std::move(body))
     {
     }
-    Position getStartPosition() const override { return funToken.startPosition; }
+    Position getStartPosition() const override { return pos; }
     std::string toStr(int indent) const override;
 };
 
 class IfStatementNode : public StatementNode
 {
    public:
+    Position pos;
     std::unique_ptr<ExpressionNode> condition;
     std::unique_ptr<StatementBlockNode> thenBlock;
     std::unique_ptr<StatementBlockNode> elseBlock;
-    Token ifToken;
-    Token lParenToken;
-    Token rParenToken;
-    Token elseToken;
-    IfStatementNode(Token ifToken, Token lParenToken, std::unique_ptr<ExpressionNode> condition,
-                    Token rParenToken, std::unique_ptr<StatementBlockNode> thenBlock,
-                    std::unique_ptr<StatementBlockNode> elseBlock = nullptr,
-                    Token elseToken = Token(TokenType::Unknown, Position()))
-        : condition(std::move(condition)),
+    IfStatementNode(Position p,  std::unique_ptr<ExpressionNode> condition,
+                    std::unique_ptr<StatementBlockNode> thenBlock,
+                    std::unique_ptr<StatementBlockNode> elseBlock = nullptr)
+        : pos(p), 
+          condition(std::move(condition)),
           thenBlock(std::move(thenBlock)),
-          elseBlock(std::move(elseBlock)),
-          ifToken(ifToken),
-          lParenToken(lParenToken),
-          rParenToken(rParenToken),
-          elseToken(elseToken)
+          elseBlock(std::move(elseBlock))
     {
     }
-    Position getStartPosition() const override { return ifToken.startPosition; }
+    Position getStartPosition() const override { return pos; }
     std::string toStr(int indent) const override;
 };
 
 class DeclarationNode : public StatementNode
 {
    public:
-    Token typeModifierToken;
-    Token identifierToken;
+    bool modifier;
+    std::string identifier;
+    Position pos;
     std::unique_ptr<ExpressionNode> initializer;
-    Token assignToken;
-    DeclarationNode(Token typeModifierToken, Token identifierToken,
-                    std::unique_ptr<ExpressionNode> initializer = nullptr,
-                    Token assignToken = Token(TokenType::Unknown, Position()))
-        : typeModifierToken(typeModifierToken),
-          identifierToken(identifierToken),
-          initializer(std::move(initializer)),
-          assignToken(assignToken)
+    DeclarationNode(bool m, std::string i, Position p,
+                    std::unique_ptr<ExpressionNode> initializer = nullptr)
+        : modifier(m), identifier(i), pos(p),
+          initializer(std::move(initializer))
     {
     }
-    Position getStartPosition() const override { return typeModifierToken.startPosition; }
-    std::string getIdentifierName() const { return identifierToken.getValue<std::string>(); }
+    Position getStartPosition() const override { return pos; }
+    std::string getIdentifierName() const { return identifier; }
     std::string toStr(int indent) const override;
 };
 
 class ReturnStatementNode : public StatementNode
 {
    public:
-    Token returnToken;
+    Position pos;
     std::unique_ptr<ExpressionNode> returnValue;
-    ReturnStatementNode(Token returnToken, std::unique_ptr<ExpressionNode> returnValue = nullptr)
-        : returnToken(returnToken), returnValue(std::move(returnValue))
+    ReturnStatementNode(Position p, std::unique_ptr<ExpressionNode> returnValue = nullptr)
+        : pos(p), returnValue(std::move(returnValue))
     {
     }
-    Position getStartPosition() const override { return returnToken.startPosition; }
+    Position getStartPosition() const override { return pos; }
     std::string toStr(int indent) const override;
 };
 
 class AssignNode : public StatementNode
 {
    public:
-    Token identifierToken;
-    Token assignToken;
+    std::string identifier;
+    Position pos;
     std::unique_ptr<ExpressionNode> expression;
-    AssignNode(Token identifierToken, Token assignToken, std::unique_ptr<ExpressionNode> expression)
-        : identifierToken(identifierToken),
-          assignToken(assignToken),
+    AssignNode(std::string i, Position p, std::unique_ptr<ExpressionNode> expression)
+        : identifier(i),
+          pos(p),
           expression(std::move(expression))
     {
     }
-    Position getStartPosition() const override { return identifierToken.startPosition; }
+    Position getStartPosition() const override { return pos; }
     std::string toStr(int indent) const override;
-    std::string getIdentifierName() const { return identifierToken.getValue<std::string>(); }
+    std::string getIdentifierName() const { return identifier; }
 };
 
 class WhileStatementNode : public StatementNode
 {
    public:
+    Position pos;
     std::unique_ptr<ExpressionNode> condition;
     std::unique_ptr<StatementBlockNode> body;
-    Token whileToken;
-    Token lParenToken;
-    Token rParenToken;
-    WhileStatementNode(Token whileToken, Token lParenToken,
-                       std::unique_ptr<ExpressionNode> condition, Token rParenToken,
+    WhileStatementNode(Position p,
+                       std::unique_ptr<ExpressionNode> condition,
                        std::unique_ptr<StatementBlockNode> body)
-        : condition(std::move(condition)),
-          body(std::move(body)),
-          whileToken(whileToken),
-          lParenToken(lParenToken),
-          rParenToken(rParenToken)
+        : pos(p), condition(std::move(condition)),
+          body(std::move(body))
     {
     }
-    Position getStartPosition() const override { return whileToken.startPosition; }
+    Position getStartPosition() const override { return pos; }
     std::string toStr(int indent) const override;
 };
 
