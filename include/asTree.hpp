@@ -13,6 +13,32 @@ struct FuncDefArgument
     std::string id;
 };
 
+enum class BinOperator
+{
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    Equal,
+    NotEqual,
+    Greater,
+    GreaterEqual,
+    Less,
+    LessEqual,
+    Pipe,
+    AtAt,
+    And,
+    Or,
+    Unknown
+};
+
+enum class CastType
+{
+    String,
+    Float,
+    Int
+};
+
 class ExpressionNode;
 class StatementNode;
 
@@ -65,11 +91,11 @@ class BinaryOpNode : public ExpressionNode
 {
    public:
     std::unique_ptr<ExpressionNode> left;
-    Token opToken;
+    BinOperator binOp;
     std::unique_ptr<ExpressionNode> right;
-    BinaryOpNode(std::unique_ptr<ExpressionNode> left, Token opToken,
+    BinaryOpNode(std::unique_ptr<ExpressionNode> left, BinOperator op,
                  std::unique_ptr<ExpressionNode> right)
-        : left(std::move(left)), opToken(opToken), right(std::move(right))
+        : left(std::move(left)), binOp(op), right(std::move(right))
     {
     }
     Position getStartPosition() const override { return left->getStartPosition(); }
@@ -80,14 +106,14 @@ class TypeCastNode : public ExpressionNode
 {
    public:
     std::unique_ptr<ExpressionNode> expression;
-    Token typeToken;
-    TypeCastNode(std::unique_ptr<ExpressionNode> expression, Token typeToken)
-        : expression(std::move(expression)), typeToken(typeToken)
+    CastType type;
+    TypeCastNode(std::unique_ptr<ExpressionNode> expression, CastType t)
+        : expression(std::move(expression)), type(t)
     {
     }
     Position getStartPosition() const override { return expression->getStartPosition(); }
     std::string toStr(int indent = 0) const override;
-    TokenType getTargetType() const { return typeToken.type; }
+    CastType getTargetType() const { return type; }
 };
 
 class FunctionCallNode : public ExpressionNode
@@ -159,8 +185,7 @@ class FunctionLiteralNode : public ExpressionNode
     std::unique_ptr<StatementBlockNode> body;
     FunctionLiteralNode(Position p, std::vector<FuncDefArgument> parameters,
                         std::unique_ptr<StatementBlockNode> body)
-        : pos(p), parameters(std::move(parameters)),
-          body(std::move(body))
+        : pos(p), parameters(std::move(parameters)), body(std::move(body))
     {
     }
     Position getStartPosition() const override { return pos; }
@@ -174,10 +199,10 @@ class IfStatementNode : public StatementNode
     std::unique_ptr<ExpressionNode> condition;
     std::unique_ptr<StatementBlockNode> thenBlock;
     std::unique_ptr<StatementBlockNode> elseBlock;
-    IfStatementNode(Position p,  std::unique_ptr<ExpressionNode> condition,
+    IfStatementNode(Position p, std::unique_ptr<ExpressionNode> condition,
                     std::unique_ptr<StatementBlockNode> thenBlock,
                     std::unique_ptr<StatementBlockNode> elseBlock = nullptr)
-        : pos(p), 
+        : pos(p),
           condition(std::move(condition)),
           thenBlock(std::move(thenBlock)),
           elseBlock(std::move(elseBlock))
@@ -196,8 +221,7 @@ class DeclarationNode : public StatementNode
     std::unique_ptr<ExpressionNode> initializer;
     DeclarationNode(bool m, std::string i, Position p,
                     std::unique_ptr<ExpressionNode> initializer = nullptr)
-        : modifier(m), identifier(i), pos(p),
-          initializer(std::move(initializer))
+        : modifier(m), identifier(i), pos(p), initializer(std::move(initializer))
     {
     }
     Position getStartPosition() const override { return pos; }
@@ -225,9 +249,7 @@ class AssignNode : public StatementNode
     Position pos;
     std::unique_ptr<ExpressionNode> expression;
     AssignNode(std::string i, Position p, std::unique_ptr<ExpressionNode> expression)
-        : identifier(i),
-          pos(p),
-          expression(std::move(expression))
+        : identifier(i), pos(p), expression(std::move(expression))
     {
     }
     Position getStartPosition() const override { return pos; }
@@ -241,11 +263,9 @@ class WhileStatementNode : public StatementNode
     Position pos;
     std::unique_ptr<ExpressionNode> condition;
     std::unique_ptr<StatementBlockNode> body;
-    WhileStatementNode(Position p,
-                       std::unique_ptr<ExpressionNode> condition,
+    WhileStatementNode(Position p, std::unique_ptr<ExpressionNode> condition,
                        std::unique_ptr<StatementBlockNode> body)
-        : pos(p), condition(std::move(condition)),
-          body(std::move(body))
+        : pos(p), condition(std::move(condition)), body(std::move(body))
     {
     }
     Position getStartPosition() const override { return pos; }

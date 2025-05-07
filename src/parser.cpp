@@ -27,8 +27,7 @@ bool Parser::match(std::vector<TokenType> types, bool consume)
     {
         if (check(type))
         {
-            if (consume)
-                advance();
+            if (consume) advance();
             return true;
         }
     }
@@ -47,6 +46,56 @@ Token Parser::consume(TokenType type, const std::string& errorMessage)
 InterpreterException Parser::error(const std::string& message) const
 {
     return InterpreterException(ErrorType::Semantic, message, currentToken.startPosition);
+}
+
+BinOperator Parser::getOperator()
+{
+    Token op = advance();
+    switch (op.type)
+    {
+        case TokenType::Plus:
+            return BinOperator::Plus;
+        case TokenType::Minus:
+            return BinOperator::Minus;
+        case TokenType::Star:
+            return BinOperator::Star;
+        case TokenType::Slash:
+            return BinOperator::Slash;
+        case TokenType::Equal:
+            return BinOperator::Equal;
+        case TokenType::NotEqual:
+            return BinOperator::NotEqual;
+        case TokenType::Greater:
+            return BinOperator::Greater;
+        case TokenType::GreaterEqual:
+            return BinOperator::GreaterEqual;
+        case TokenType::Less:
+            return BinOperator::Less;
+        case TokenType::LessEqual:
+            return BinOperator::LessEqual;
+        case TokenType::Pipe:
+            return BinOperator::Pipe;
+        case TokenType::AtAt:
+            return BinOperator::AtAt;
+        case TokenType::And:
+            return BinOperator::And;
+        case TokenType::Or:
+            return BinOperator::Or;
+        default:
+            return BinOperator::Unknown;
+    }
+}
+
+CastType Parser::getCastType(Token typeToken)
+{
+    std::string type = typeToken.getValue<std::string>();
+    if (type == "string")
+        return CastType::String;
+    else if (type == "float")
+        return CastType::Float;
+    else if (type == "int")
+        return CastType::Int;
+    throw error("Unexpected token type" + type);
 }
 
 // Program         = { FunctionDeclaration | Declaration };
@@ -76,7 +125,8 @@ std::unique_ptr<FunctionDeclarationNode> Parser::parseFunctionDeclaration()
     if (!check(TokenType::Fun)) return nullptr;
     Position startPos = currentToken.startPosition;
     consume(TokenType::Fun, "Expected 'fun'");
-    std::string name = consume(TokenType::Identifier, "Expected function's name").getValue<std::string>();
+    std::string name =
+        consume(TokenType::Identifier, "Expected function's name").getValue<std::string>();
     consume(TokenType::LParen, "Expected '('");
     std::vector<FuncDefArgument> params = parseParameters();
     consume(TokenType::RParen, "Expected ')'");
@@ -105,7 +155,8 @@ std::vector<FuncDefArgument> Parser::parseParameters()
             }
             else
                 throw error("Expected 'const' or 'var'");
-            std::string tmpId = consume(TokenType::Identifier, "Expected param's name").getValue<std::string>();
+            std::string tmpId =
+                consume(TokenType::Identifier, "Expected param's name").getValue<std::string>();
             params.push_back(FuncDefArgument{mod, tmpId});
         } while (match({TokenType::Comma}, true));
     }
@@ -173,8 +224,7 @@ std::unique_ptr<IfStatementNode> Parser::parseIfStatement()
     {
         elseBranch = parseStatementBlock();
     }
-    return std::make_unique<IfStatementNode>(startPos, std::move(condition),
-                                             std::move(thenBranch),
+    return std::make_unique<IfStatementNode>(startPos, std::move(condition), std::move(thenBranch),
                                              std::move(elseBranch));
 }
 
@@ -215,7 +265,8 @@ std::unique_ptr<DeclarationNode> Parser::parseDeclaration()
         consume(TokenType::Var, "Expected 'var'");
     else
         consume(TokenType::Const, "Expected 'const'");
-    std::string name = consume(TokenType::Identifier, "Expected variable's name").getValue<std::string>();
+    std::string name =
+        consume(TokenType::Identifier, "Expected variable's name").getValue<std::string>();
     std::unique_ptr<ExpressionNode> initializer = nullptr;
     if (match({TokenType::Assign}, true))
     {
@@ -284,7 +335,8 @@ std::unique_ptr<ExpressionNode> Parser::parseExpression()
 
     while (match({TokenType::As}, true))
     {
-        Token type = consume(TokenType::Type, "Expected a type");
+        Token typeToken = consume(TokenType::Type, "Expected a type");
+        CastType type = getCastType(typeToken);
         left = std::make_unique<TypeCastNode>(std::move(left), type);
     }
 
@@ -297,7 +349,7 @@ std::unique_ptr<ExpressionNode> Parser::parseLogicalExpr()
     std::unique_ptr<ExpressionNode> left = parseRelExpression();
     while (match({TokenType::And, TokenType::Or}))
     {
-        Token op = advance();
+        BinOperator op = getOperator();
         std::unique_ptr<ExpressionNode> right = parseRelExpression();
         left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
     }
@@ -308,10 +360,10 @@ std::unique_ptr<ExpressionNode> Parser::parseLogicalExpr()
 std::unique_ptr<ExpressionNode> Parser::parseRelExpression()
 {
     std::unique_ptr<ExpressionNode> left = parseSimpleExpression();
-    while (match({TokenType::Equal, TokenType::NotEqual, TokenType::Greater, TokenType::GreaterEqual,
-                 TokenType::Less, TokenType::LessEqual}))
+    while (match({TokenType::Equal, TokenType::NotEqual, TokenType::Greater,
+                  TokenType::GreaterEqual, TokenType::Less, TokenType::LessEqual}))
     {
-        Token op = advance();
+        BinOperator op = getOperator();
         std::unique_ptr<ExpressionNode> right = parseSimpleExpression();
         left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
     }
@@ -324,7 +376,7 @@ std::unique_ptr<ExpressionNode> Parser::parseSimpleExpression()
     std::unique_ptr<ExpressionNode> left = parseTerm();
     while (match({TokenType::Plus, TokenType::Minus, TokenType::Pipe, TokenType::AtAt}))
     {
-        Token op = advance();
+        BinOperator op = getOperator();
         std::unique_ptr<ExpressionNode> right = parseTerm();
         left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
     }
@@ -337,7 +389,7 @@ std::unique_ptr<ExpressionNode> Parser::parseTerm()
     std::unique_ptr<ExpressionNode> left = parseFactor();
     while (match({TokenType::Star, TokenType::Slash}))
     {
-        Token op = advance();
+        BinOperator op = getOperator();
         std::unique_ptr<ExpressionNode> right = parseFactor();
         left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
     }
@@ -370,8 +422,10 @@ std::unique_ptr<ExpressionNode> Parser::parseBaseFactor()
     {
         Token numToken = consume(TokenType::Number, "Expected a number");
         if (std::holds_alternative<int>(numToken.value))
-            return std::make_unique<NumberLiteralNode>(numToken.getValue<int>(), numToken.startPosition);
-        return std::make_unique<NumberLiteralNode>(numToken.getValue<float>(), numToken.startPosition);
+            return std::make_unique<NumberLiteralNode>(numToken.getValue<int>(),
+                                                       numToken.startPosition);
+        return std::make_unique<NumberLiteralNode>(numToken.getValue<float>(),
+                                                   numToken.startPosition);
     }
     if (check(TokenType::StringLiteral))
     {
@@ -382,7 +436,8 @@ std::unique_ptr<ExpressionNode> Parser::parseBaseFactor()
     if (check(TokenType::Identifier))
     {
         Position startPos = currentToken.startPosition;
-        std::string id = consume(TokenType::Identifier, "Expected an identification").getValue<std::string>();
+        std::string id =
+            consume(TokenType::Identifier, "Expected an identification").getValue<std::string>();
         return std::make_unique<IdentifierNode>(id, startPos);
     }
     if (check(TokenType::LParen))
@@ -410,6 +465,5 @@ std::unique_ptr<FunctionLiteralNode> Parser::parseFunctionLiteral()
     Token rParenToken = consume(TokenType::RParen, "Expected ')'");
     std::unique_ptr<StatementBlockNode> body = parseStatementBlock();
 
-    return std::make_unique<FunctionLiteralNode>( startPos, parameters,
-                                                 std::move(body));
+    return std::make_unique<FunctionLiteralNode>(startPos, parameters, std::move(body));
 }

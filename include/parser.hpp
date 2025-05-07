@@ -24,6 +24,8 @@ class Parser
     bool match(std::vector<TokenType> tokens, bool consume = false);
     Token consume(TokenType type, const std::string& errorMessage);
     InterpreterException error(const std::string& message) const;
+    BinOperator getOperator();
+    CastType getCastType(Token typeToken);
 
     std::unique_ptr<FunctionDeclarationNode> parseFunctionDeclaration();
     std::vector<FuncDefArgument> parseParameters();

@@ -4,44 +4,58 @@
 
 namespace
 {
-std::string tokenTypeToString(TokenType type)
+std::string operatorToString(BinOperator op)
 {
-    switch (type)
+    switch (op)
     {
-        case TokenType::Plus:
+        case BinOperator::Plus:
             return "Plus";
-        case TokenType::Minus:
+        case BinOperator::Minus:
             return "Minus";
-        case TokenType::Star:
+        case BinOperator::Star:
             return "Star";
-        case TokenType::Slash:
+        case BinOperator::Slash:
             return "Slash";
-        case TokenType::Equal:
+        case BinOperator::Equal:
             return "Equal";
-        case TokenType::NotEqual:
+        case BinOperator::NotEqual:
             return "NotEqual";
-        case TokenType::Greater:
+        case BinOperator::Greater:
             return "Greater";
-        case TokenType::GreaterEqual:
+        case BinOperator::GreaterEqual:
             return "GreaterEqual";
-        case TokenType::Less:
+        case BinOperator::Less:
             return "Less";
-        case TokenType::LessEqual:
+        case BinOperator::LessEqual:
             return "LessEqual";
-        case TokenType::Pipe:
+        case BinOperator::Pipe:
             return "Pipe";
-        case TokenType::AtAt:
+        case BinOperator::AtAt:
             return "AtAt";
-        case TokenType::Assign:
-            return "Assign";
-        case TokenType::And:
+        case BinOperator::And:
             return "And";
-        case TokenType::Or:
+        case BinOperator::Or:
             return "Or";
         default:
             return "Wrong TokenType";
     }
 }
+
+std::string typeToString(CastType type)
+{
+    switch (type)
+    {
+        case CastType::String:
+            return "string";
+        case CastType::Float:
+            return "float";
+        case CastType::Int:
+            return "int";
+        default:
+            return "Wrong Type";
+    }
+}
+
 }  // namespace
 
 std::string NumberLiteralNode::toStr(int indent) const
@@ -73,14 +87,14 @@ std::string IdentifierNode::toStr(int indent) const
 std::string BinaryOpNode::toStr(int indent) const
 {
     std::string result = "";
-    result += left->toStr(indent + 1) + " " + tokenTypeToString(opToken.type) + " " +
-              right->toStr(indent + 1);
+    result +=
+        left->toStr(indent + 1) + " " + operatorToString(binOp) + " " + right->toStr(indent + 1);
     return result;
 }
 
 std::string TypeCastNode::toStr(int indent) const
 {
-    return expression->toStr(indent + 1) + " As " + typeToken.getValue<std::string>();
+    return expression->toStr(indent + 1) + " As " + typeToString(type);
 }
 
 std::string FunctionCallNode::toStr(int indent) const
@@ -101,8 +115,7 @@ std::string FunctionCallNode::toStr(int indent) const
 std::string DeclarationNode::toStr(int indent) const
 {
     std::string mod = modifier ? "Var" : "Const";
-    std::string result = std::string(indent, ' ') + mod +
-                         " " + getIdentifierName();
+    std::string result = std::string(indent, ' ') + mod + " " + getIdentifierName();
     if (initializer)
     {
         result += " = " + initializer->toStr(indent + 1);
@@ -133,8 +146,7 @@ std::string FunctionDeclarationNode::toStr(int indent) const
     for (size_t i = 0; i < params.size(); ++i)
     {
         std::string mod = params[i].modifier ? "Var" : "Const";
-        result += mod + " " +
-                  params[i].id;
+        result += mod + " " + params[i].id;
         if (i < params.size() - 1)
         {
             result += ", ";
@@ -150,8 +162,7 @@ std::string FunctionLiteralNode::toStr(int indent) const
     for (size_t i = 0; i < parameters.size(); ++i)
     {
         std::string mod = parameters[i].modifier ? "Var" : "Const";
-        result += mod + " " +
-                  parameters[i].id;
+        result += mod + " " + parameters[i].id;
         if (i < parameters.size() - 1)
         {
             result += ", ";
@@ -185,8 +196,7 @@ std::string ReturnStatementNode::toStr(int indent) const
 
 std::string AssignNode::toStr(int indent) const
 {
-    return std::string(indent, ' ') + identifier + " = " +
-           expression->toStr(indent + 1) + ";";
+    return std::string(indent, ' ') + identifier + " = " + expression->toStr(indent + 1) + ";";
 }
 
 std::string WhileStatementNode::toStr(int indent) const
