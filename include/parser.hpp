@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <memory>
 #include <optional>
@@ -21,11 +23,10 @@ class Parser
 
     Token advance();
     bool check(TokenType type) const;
-    bool match(std::vector<TokenType> tokens, bool consume = false);
+    bool match(const std::vector<TokenType> types);
+    bool isIn(const std::vector<TokenType> types);
     Token consume(TokenType type, const std::string& errorMessage);
     InterpreterException error(const std::string& message) const;
-    BinOperator getOperator();
-    CastType getCastType(Token typeToken);
 
     std::unique_ptr<FunctionDeclarationNode> parseFunctionDeclaration();
     std::vector<FuncDefArgument> parseParameters();

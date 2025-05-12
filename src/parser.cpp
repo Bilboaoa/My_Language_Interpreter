@@ -1,8 +1,63 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <utility>
+#include <algorithm>
 
 #include "parser.hpp"
+
+namespace 
+{
+    BinOperator getOperator(TokenType operatorType)
+    {
+        switch (operatorType)
+        {
+            case TokenType::Plus:
+                return BinOperator::Plus;
+            case TokenType::Minus:
+                return BinOperator::Minus;
+            case TokenType::Star:
+                return BinOperator::Star;
+            case TokenType::Slash:
+                return BinOperator::Slash;
+            case TokenType::Equal:
+                return BinOperator::Equal;
+            case TokenType::NotEqual:
+                return BinOperator::NotEqual;
+            case TokenType::Greater:
+                return BinOperator::Greater;
+            case TokenType::GreaterEqual:
+                return BinOperator::GreaterEqual;
+            case TokenType::Less:
+                return BinOperator::Less;
+            case TokenType::LessEqual:
+                return BinOperator::LessEqual;
+            case TokenType::Pipe:
+                return BinOperator::Pipe;
+            case TokenType::AtAt:
+                return BinOperator::AtAt;
+            case TokenType::And:
+                return BinOperator::And;
+            case TokenType::Or:
+                return BinOperator::Or;
+            default:
+                return BinOperator::Unknown;
+        }
+    }
+    
+    CastType getCastType(Token typeToken)
+    {
+        std::string type = typeToken.getValue<std::string>();
+        if (type == "string")
+            return CastType::String;
+        else if (type == "float")
+            return CastType::Float;
+        else if (type == "int")
+            return CastType::Int;
+        throw InterpreterException(ErrorType::Semantic, "Unexpected token type" + type, typeToken.startPosition);
+    }
+    
+}
 
 Parser::Parser(Lexer& lexer) : lexer(lexer), currentToken(TokenType::Unknown, Position())
 {
@@ -11,9 +66,7 @@ Parser::Parser(Lexer& lexer) : lexer(lexer), currentToken(TokenType::Unknown, Po
 
 Token Parser::advance()
 {
-    Token previous = currentToken;
-    currentToken = lexer.scanToken();
-    return previous;
+    return std::exchange(currentToken, lexer.scanToken());
 }
 
 bool Parser::check(TokenType type) const
@@ -21,17 +74,17 @@ bool Parser::check(TokenType type) const
     return currentToken.type == type;
 }
 
-bool Parser::match(std::vector<TokenType> types, bool consume)
+bool Parser::match(const std::vector<TokenType> types)
 {
-    for (TokenType type : types)
-    {
-        if (check(type))
-        {
-            if (consume) advance();
-            return true;
-        }
-    }
-    return false;
+    bool found = std::find(types.begin(), types.end(), currentToken.type) != types.end();
+    if (found)
+        advance();
+    return found;
+}
+
+bool Parser::isIn(const std::vector<TokenType> types)
+{
+    return std::find(types.begin(), types.end(), currentToken.type) != types.end();
 }
 
 Token Parser::consume(TokenType type, const std::string& errorMessage)
@@ -46,56 +99,6 @@ Token Parser::consume(TokenType type, const std::string& errorMessage)
 InterpreterException Parser::error(const std::string& message) const
 {
     return InterpreterException(ErrorType::Semantic, message, currentToken.startPosition);
-}
-
-BinOperator Parser::getOperator()
-{
-    Token op = advance();
-    switch (op.type)
-    {
-        case TokenType::Plus:
-            return BinOperator::Plus;
-        case TokenType::Minus:
-            return BinOperator::Minus;
-        case TokenType::Star:
-            return BinOperator::Star;
-        case TokenType::Slash:
-            return BinOperator::Slash;
-        case TokenType::Equal:
-            return BinOperator::Equal;
-        case TokenType::NotEqual:
-            return BinOperator::NotEqual;
-        case TokenType::Greater:
-            return BinOperator::Greater;
-        case TokenType::GreaterEqual:
-            return BinOperator::GreaterEqual;
-        case TokenType::Less:
-            return BinOperator::Less;
-        case TokenType::LessEqual:
-            return BinOperator::LessEqual;
-        case TokenType::Pipe:
-            return BinOperator::Pipe;
-        case TokenType::AtAt:
-            return BinOperator::AtAt;
-        case TokenType::And:
-            return BinOperator::And;
-        case TokenType::Or:
-            return BinOperator::Or;
-        default:
-            return BinOperator::Unknown;
-    }
-}
-
-CastType Parser::getCastType(Token typeToken)
-{
-    std::string type = typeToken.getValue<std::string>();
-    if (type == "string")
-        return CastType::String;
-    else if (type == "float")
-        return CastType::Float;
-    else if (type == "int")
-        return CastType::Int;
-    throw error("Unexpected token type" + type);
 }
 
 // Program         = { FunctionDeclaration | Declaration };
@@ -145,11 +148,11 @@ std::vector<FuncDefArgument> Parser::parseParameters()
         do
         {
             bool mod;
-            if (match({TokenType::Const}, true))
+            if (match({TokenType::Const}))
             {
                 mod = false;
             }
-            else if (match({TokenType::Var}, true))
+            else if (match({TokenType::Var}))
             {
                 mod = true;
             }
@@ -158,7 +161,7 @@ std::vector<FuncDefArgument> Parser::parseParameters()
             std::string tmpId =
                 consume(TokenType::Identifier, "Expected param's name").getValue<std::string>();
             params.push_back(FuncDefArgument{mod, tmpId});
-        } while (match({TokenType::Comma}, true));
+        } while (match({TokenType::Comma}));
     }
     return params;
 }
@@ -220,7 +223,7 @@ std::unique_ptr<IfStatementNode> Parser::parseIfStatement()
     consume(TokenType::RParen, "Expected ')'");
     std::unique_ptr<StatementBlockNode> thenBranch = parseStatementBlock();
     std::unique_ptr<StatementBlockNode> elseBranch = nullptr;
-    if (match({TokenType::Else}, true))
+    if (match({TokenType::Else}))
     {
         elseBranch = parseStatementBlock();
     }
@@ -268,7 +271,7 @@ std::unique_ptr<DeclarationNode> Parser::parseDeclaration()
     std::string name =
         consume(TokenType::Identifier, "Expected variable's name").getValue<std::string>();
     std::unique_ptr<ExpressionNode> initializer = nullptr;
-    if (match({TokenType::Assign}, true))
+    if (match({TokenType::Assign}))
     {
         initializer = parseExpression();
     }
@@ -287,7 +290,7 @@ std::unique_ptr<StatementNode> Parser::parseIdOrCallAssign()
 std::unique_ptr<StatementNode> Parser::parsePossibleAssignOrCall(std::string id)
 {
     Position startPos = currentToken.startPosition;
-    if (match({TokenType::Assign}, true))
+    if (match({TokenType::Assign}))
     {
         std::unique_ptr<ExpressionNode> expr = parseExpression();
         std::unique_ptr<AssignNode> assigned =
@@ -322,7 +325,7 @@ std::vector<std::unique_ptr<ExpressionNode>> Parser::parseArgumentList()
         do
         {
             args.push_back(parseExpression());
-        } while (match({TokenType::Comma}, true));
+        } while (match({TokenType::Comma}));
     }
     return args;
 }
@@ -333,7 +336,7 @@ std::unique_ptr<ExpressionNode> Parser::parseExpression()
 {
     std::unique_ptr<ExpressionNode> left = parseSimpleExpression();
 
-    while (match({TokenType::As}, true))
+    while (match({TokenType::As}))
     {
         Token typeToken = consume(TokenType::Type, "Expected a type");
         CastType type = getCastType(typeToken);
@@ -347,9 +350,10 @@ std::unique_ptr<ExpressionNode> Parser::parseExpression()
 std::unique_ptr<ExpressionNode> Parser::parseLogicalExpr()
 {
     std::unique_ptr<ExpressionNode> left = parseRelExpression();
-    while (match({TokenType::And, TokenType::Or}))
+    while (isIn({TokenType::And, TokenType::Or}))
     {
-        BinOperator op = getOperator();
+        Token operatorToken = advance();
+        BinOperator op = getOperator(operatorToken.type);
         std::unique_ptr<ExpressionNode> right = parseRelExpression();
         left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
     }
@@ -360,10 +364,11 @@ std::unique_ptr<ExpressionNode> Parser::parseLogicalExpr()
 std::unique_ptr<ExpressionNode> Parser::parseRelExpression()
 {
     std::unique_ptr<ExpressionNode> left = parseSimpleExpression();
-    while (match({TokenType::Equal, TokenType::NotEqual, TokenType::Greater,
+    while (isIn({TokenType::Equal, TokenType::NotEqual, TokenType::Greater,
                   TokenType::GreaterEqual, TokenType::Less, TokenType::LessEqual}))
     {
-        BinOperator op = getOperator();
+        Token operatorToken = advance();
+        BinOperator op = getOperator(operatorToken.type);
         std::unique_ptr<ExpressionNode> right = parseSimpleExpression();
         left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
     }
@@ -374,9 +379,10 @@ std::unique_ptr<ExpressionNode> Parser::parseRelExpression()
 std::unique_ptr<ExpressionNode> Parser::parseSimpleExpression()
 {
     std::unique_ptr<ExpressionNode> left = parseTerm();
-    while (match({TokenType::Plus, TokenType::Minus, TokenType::Pipe, TokenType::AtAt}))
+    while (isIn({TokenType::Plus, TokenType::Minus, TokenType::Pipe, TokenType::AtAt}))
     {
-        BinOperator op = getOperator();
+        Token operatorToken = advance();
+        BinOperator op = getOperator(operatorToken.type);
         std::unique_ptr<ExpressionNode> right = parseTerm();
         left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
     }
@@ -387,9 +393,10 @@ std::unique_ptr<ExpressionNode> Parser::parseSimpleExpression()
 std::unique_ptr<ExpressionNode> Parser::parseTerm()
 {
     std::unique_ptr<ExpressionNode> left = parseFactor();
-    while (match({TokenType::Star, TokenType::Slash}))
+    while (isIn({TokenType::Star, TokenType::Slash}))
     {
-        BinOperator op = getOperator();
+        Token operatorToken = advance();
+        BinOperator op = getOperator(operatorToken.type);
         std::unique_ptr<ExpressionNode> right = parseFactor();
         left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right));
     }
