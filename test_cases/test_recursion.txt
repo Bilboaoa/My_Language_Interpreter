@@ -6,6 +6,6 @@ fun recursive(var a)
 
 fun main()
 [
-	recursive(1)
+	recursive(1);
 	return 0;
 ]

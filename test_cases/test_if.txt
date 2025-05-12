@@ -13,7 +13,7 @@ fun main()
 	]
 	if (a > b)
 	[
-		b = b + 1'
+		b = b + 1;
 	]
 	if (a >= b)
 	[

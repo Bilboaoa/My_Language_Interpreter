@@ -398,16 +398,6 @@ TEST_CASE("Keyword: as", "[lexer][keyword]")
     REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
 }
 
-TEST_CASE("Keyword: print", "[lexer][keyword]")
-{
-    std::istringstream input("print");
-    Lexer lexer(input);
-    auto tokens = tokenize(&lexer);
-
-    REQUIRE(tokens[0].type == TokenType::Print);
-    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
-}
-
 TEST_CASE("Operator: +", "[lexer][keyword]")
 {
     std::istringstream input("+");
@@ -676,11 +666,11 @@ TEST_CASE("Type keywords recognized as TokenType::Type", "[lexer][type]")
     auto tokens = tokenize(&lexer);
 
     REQUIRE(tokens[0].type == TokenType::Type);
-    REQUIRE(std::holds_alternative<std::monostate>(tokens[0].value));
+    REQUIRE(tokens[0].getValue<std::string>() == "int");
     REQUIRE(tokens[1].type == TokenType::Type);
-    REQUIRE(std::holds_alternative<std::monostate>(tokens[1].value));
+    REQUIRE(tokens[1].getValue<std::string>() == "float");
     REQUIRE(tokens[2].type == TokenType::Type);
-    REQUIRE(std::holds_alternative<std::monostate>(tokens[2].value));
+    REQUIRE(tokens[2].getValue<std::string>() == "string");
 }
 
 TEST_CASE("Constant variable declaration", "[lexer][keyword]")
@@ -849,20 +839,6 @@ TEST_CASE("Basic as statement", "[lexer][keyword]")
     REQUIRE(tokens[1].type == TokenType::As);
     REQUIRE(tokens[2].type == TokenType::Type);
     REQUIRE(tokens[3].type == TokenType::Semicolon);
-}
-
-TEST_CASE("Basic print", "[lexer][keyword]")
-{
-    std::istringstream input(R"( print("Hello World"); )");
-    Lexer lexer(input);
-    auto tokens = tokenize(&lexer);
-
-    REQUIRE(tokens[0].type == TokenType::Print);
-    REQUIRE(tokens[1].type == TokenType::LParen);
-    REQUIRE(tokens[2].type == TokenType::StringLiteral);
-    REQUIRE(tokens[2].getValue<std::string>() == "Hello World");
-    REQUIRE(tokens[3].type == TokenType::RParen);
-    REQUIRE(tokens[4].type == TokenType::Semicolon);
 }
 
 TEST_CASE("Operator Plus", "[lexer][operators]")

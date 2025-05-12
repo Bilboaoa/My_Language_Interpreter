@@ -9,7 +9,7 @@ enum class ErrorType
     Lexical,
     Syntax,
     Semantic,
-    Runtime
+    Runtime,
 };
 
 struct Error

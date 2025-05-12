@@ -10,3 +10,4 @@ PointerAlignment: Left
 IncludeBlocks: Preserve
 SortIncludes: false
 BreakBeforeBraces: Allman
+EmptyLineBeforeAccessModifier: Always

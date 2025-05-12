@@ -2,8 +2,8 @@
 
 fun main()
 [
-	var square = fun(var x) [ return x * x ];
-    var increment = fun(var x) [ return x + 1 ];
+	var square = fun(var x) [ return x * x; ];
+    var increment = fun(var x) [ return x + 1; ];
     var square_then_increment = double | increment;
 	return 0;
 ]
