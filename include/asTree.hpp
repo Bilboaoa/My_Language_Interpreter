@@ -58,6 +58,7 @@ class NumberLiteralNode : public ExpressionNode
 {
     std::variant<int, float> value;
     Position pos;
+
    public:
     NumberLiteralNode(std::variant<int, float> val, Position p) : value(val), pos(p) {}
     Position getStartPosition() const override { return pos; }
@@ -69,6 +70,7 @@ class StringLiteralNode : public ExpressionNode
 {
     std::string val;
     Position pos;
+
    public:
     StringLiteralNode(std::string v, Position p) : val(v), pos(p) {}
     Position getStartPosition() const override { return pos; }
@@ -80,6 +82,7 @@ class IdentifierNode : public ExpressionNode
 {
     std::string name;
     Position pos;
+
    public:
     IdentifierNode(std::string n, Position p) : name(n), pos(p) {}
     Position getStartPosition() const override { return pos; }
@@ -90,6 +93,7 @@ class IdentifierNode : public ExpressionNode
 class BinaryOpNode : public ExpressionNode
 {
     BinOperator binOp;
+
    public:
     std::unique_ptr<ExpressionNode> left;
     std::unique_ptr<ExpressionNode> right;
@@ -106,6 +110,7 @@ class BinaryOpNode : public ExpressionNode
 class TypeCastNode : public ExpressionNode
 {
     CastType type;
+
    public:
     std::unique_ptr<ExpressionNode> expression;
     TypeCastNode(std::unique_ptr<ExpressionNode> expression, CastType t)
@@ -152,6 +157,7 @@ class ExpressionStatementNode : public StatementNode
 class StatementBlockNode : public StatementNode
 {
     Position pos;
+
    public:
     std::vector<std::unique_ptr<StatementNode>> statements;
     StatementBlockNode(Position p, std::vector<std::unique_ptr<StatementNode>> statements)
@@ -166,10 +172,12 @@ class FunctionDeclarationNode : public AstNode
 {
     std::string name;
     Position pos;
+
    public:
     std::vector<std::unique_ptr<FuncDefArgument>> params;
     std::unique_ptr<StatementBlockNode> body;
-    FunctionDeclarationNode(std::string n, Position p, std::vector<std::unique_ptr<FuncDefArgument>> param,
+    FunctionDeclarationNode(std::string n, Position p,
+                            std::vector<std::unique_ptr<FuncDefArgument>> param,
                             std::unique_ptr<StatementBlockNode> bod)
         : name(n), pos(p), params(std::move(param)), body(std::move(bod))
     {
@@ -182,6 +190,7 @@ class FunctionDeclarationNode : public AstNode
 class FunctionLiteralNode : public ExpressionNode
 {
     Position pos;
+
    public:
     std::vector<std::unique_ptr<FuncDefArgument>> parameters;
     std::unique_ptr<StatementBlockNode> body;
@@ -197,6 +206,7 @@ class FunctionLiteralNode : public ExpressionNode
 class IfStatementNode : public StatementNode
 {
     Position pos;
+
    public:
     std::unique_ptr<ExpressionNode> condition;
     std::unique_ptr<StatementBlockNode> thenBlock;
@@ -219,6 +229,7 @@ class DeclarationNode : public StatementNode
     bool modifier;
     std::string identifier;
     Position pos;
+
    public:
     std::unique_ptr<ExpressionNode> initializer;
     DeclarationNode(bool m, std::string i, Position p,
@@ -235,6 +246,7 @@ class DeclarationNode : public StatementNode
 class ReturnStatementNode : public StatementNode
 {
     Position pos;
+
    public:
     std::unique_ptr<ExpressionNode> returnValue;
     ReturnStatementNode(Position p, std::unique_ptr<ExpressionNode> returnValue = nullptr)
@@ -249,6 +261,7 @@ class AssignNode : public StatementNode
 {
     std::string identifier;
     Position pos;
+
    public:
     std::unique_ptr<ExpressionNode> expression;
     AssignNode(std::string i, Position p, std::unique_ptr<ExpressionNode> expression)
@@ -263,6 +276,7 @@ class AssignNode : public StatementNode
 class WhileStatementNode : public StatementNode
 {
     Position pos;
+
    public:
     std::unique_ptr<ExpressionNode> condition;
     std::unique_ptr<StatementBlockNode> body;

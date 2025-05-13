@@ -61,9 +61,7 @@ std::string typeToString(CastType type)
 std::string NumberLiteralNode::toStr(int indent) const
 {
     indent += 1;
-    return std::visit([](auto arg) {
-        return std::to_string(arg);
-    }, value);
+    return std::visit([](auto arg) { return std::to_string(arg); }, value);
 }
 
 std::string StringLiteralNode::toStr(int indent) const

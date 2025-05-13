@@ -6,58 +6,56 @@
 
 #include "parser.hpp"
 
-namespace 
+namespace
 {
-    BinOperator getOperator(TokenType operatorType)
+BinOperator getOperator(TokenType operatorType)
+{
+    switch (operatorType)
     {
-        switch (operatorType)
-        {
-            case TokenType::Plus:
-                return BinOperator::Plus;
-            case TokenType::Minus:
-                return BinOperator::Minus;
-            case TokenType::Star:
-                return BinOperator::Star;
-            case TokenType::Slash:
-                return BinOperator::Slash;
-            case TokenType::Equal:
-                return BinOperator::Equal;
-            case TokenType::NotEqual:
-                return BinOperator::NotEqual;
-            case TokenType::Greater:
-                return BinOperator::Greater;
-            case TokenType::GreaterEqual:
-                return BinOperator::GreaterEqual;
-            case TokenType::Less:
-                return BinOperator::Less;
-            case TokenType::LessEqual:
-                return BinOperator::LessEqual;
-            case TokenType::Pipe:
-                return BinOperator::Pipe;
-            case TokenType::AtAt:
-                return BinOperator::AtAt;
-            case TokenType::And:
-                return BinOperator::And;
-            case TokenType::Or:
-                return BinOperator::Or;
-            default:
-                return BinOperator::Unknown;
-        }
+        case TokenType::Plus:
+            return BinOperator::Plus;
+        case TokenType::Minus:
+            return BinOperator::Minus;
+        case TokenType::Star:
+            return BinOperator::Star;
+        case TokenType::Slash:
+            return BinOperator::Slash;
+        case TokenType::Equal:
+            return BinOperator::Equal;
+        case TokenType::NotEqual:
+            return BinOperator::NotEqual;
+        case TokenType::Greater:
+            return BinOperator::Greater;
+        case TokenType::GreaterEqual:
+            return BinOperator::GreaterEqual;
+        case TokenType::Less:
+            return BinOperator::Less;
+        case TokenType::LessEqual:
+            return BinOperator::LessEqual;
+        case TokenType::Pipe:
+            return BinOperator::Pipe;
+        case TokenType::AtAt:
+            return BinOperator::AtAt;
+        case TokenType::And:
+            return BinOperator::And;
+        case TokenType::Or:
+            return BinOperator::Or;
+        default:
+            return BinOperator::Unknown;
     }
-    
-    CastType getCastType(Token typeToken)
-    {
-        std::string type = typeToken.getValue<std::string>();
-        if (type == "string")
-            return CastType::String;
-        if (type == "float")
-            return CastType::Float;
-        if (type == "int")
-            return CastType::Int;
-        throw InterpreterException(ErrorType::Semantic, "Unexpected token type" + type, typeToken.startPosition);
-    }
-    
 }
+
+CastType getCastType(Token typeToken)
+{
+    std::string type = typeToken.getValue<std::string>();
+    if (type == "string") return CastType::String;
+    if (type == "float") return CastType::Float;
+    if (type == "int") return CastType::Int;
+    throw InterpreterException(ErrorType::Semantic, "Unexpected token type" + type,
+                               typeToken.startPosition);
+}
+
+}  // namespace
 
 Parser::Parser(Lexer& lexer) : lexer(lexer), currentToken(TokenType::Unknown, Position())
 {
@@ -77,8 +75,7 @@ bool Parser::check(TokenType type) const
 bool Parser::match(const std::vector<TokenType> types)
 {
     bool found = std::find(types.begin(), types.end(), currentToken.type) != types.end();
-    if (found)
-        advance();
+    if (found) advance();
     return found;
 }
 
@@ -121,8 +118,7 @@ std::unique_ptr<ProgramNode> Parser::parseProgram()
         declaration = nullptr;
         funcDeclaration = nullptr;
     }
-    if (!check(TokenType::EndOfFile))
-        throw error("Unexpected token in between declarations");
+    if (!check(TokenType::EndOfFile)) throw error("Unexpected token in between declarations");
     return std::make_unique<ProgramNode>(std::move(declarations));
 }
 
@@ -139,7 +135,8 @@ std::unique_ptr<FunctionDeclarationNode> Parser::parseFunctionDeclaration()
     consume(TokenType::RParen, "Expected ')'");
     std::unique_ptr<StatementBlockNode> body = parseStatementBlock();
 
-    return std::make_unique<FunctionDeclarationNode>(name, startPos, std::move(params), std::move(body));
+    return std::make_unique<FunctionDeclarationNode>(name, startPos, std::move(params),
+                                                     std::move(body));
 }
 
 // Parameters = Parameter, {“,”, Parameter }
@@ -147,12 +144,18 @@ std::vector<std::unique_ptr<FuncDefArgument>> Parser::parseParameters()
 {
     std::vector<std::unique_ptr<FuncDefArgument>> params;
     auto param = parseParameter();
-    if (!param) { return {}; }
+    if (!param)
+    {
+        return {};
+    }
     params.push_back(std::move(param));
-    while(match({TokenType::Comma}))
-    {   
+    while (match({TokenType::Comma}))
+    {
         param = parseParameter();
-        if (!param) { throw error("Expected 'const' or 'var'"); }
+        if (!param)
+        {
+            throw error("Expected 'const' or 'var'");
+        }
         params.push_back(std::move(param));
     }
     return params;
@@ -161,8 +164,7 @@ std::vector<std::unique_ptr<FuncDefArgument>> Parser::parseParameters()
 // Parameter       = (“const” | “var”), id ;
 std::unique_ptr<FuncDefArgument> Parser::parseParameter()
 {
-    if (!check({TokenType::Const}) && !check({TokenType::Var}))
-        return nullptr;
+    if (!check({TokenType::Const}) && !check({TokenType::Var})) return nullptr;
     bool mod;
     if (match({TokenType::Const}))
     {
@@ -226,9 +228,8 @@ std::unique_ptr<StatementNode> Parser::parseStatement()
 // IfStatement = “if”, “(“, LogicalExpr, “)”, StatementBlock, [“else”, StatementBlock] ;
 std::unique_ptr<IfStatementNode> Parser::parseIfStatement()
 {
-    if (!check(TokenType::If)) return nullptr;
+    if (!match({TokenType::If})) return nullptr;
     const Position startPos = currentToken.startPosition;
-    consume(TokenType::If, "Expected 'if'");
     consume(TokenType::LParen, "Expected '('");
     std::unique_ptr<ExpressionNode> condition = parseLogicalExpr();
     consume(TokenType::RParen, "Expected ')'");
@@ -273,12 +274,14 @@ std::unique_ptr<ReturnStatementNode> Parser::parseReturnStatement()
 std::unique_ptr<DeclarationNode> Parser::parseDeclaration()
 {
     if (!check(TokenType::Const) && !check(TokenType::Var)) return nullptr;
-    Position pos = currentToken.startPosition;
-    bool modifier = check(TokenType::Var);
-    if (modifier)
-        consume(TokenType::Var, "Expected 'var'");
-    else
-        consume(TokenType::Const, "Expected 'const'");
+    const Position pos = currentToken.startPosition;
+    const bool isVar = match({TokenType::Var});
+    const bool isConst = !isVar && match({TokenType::Const});
+    if (!isVar && !isConst)
+    {
+        throw error("Expected 'const' or 'var'");
+    }
+
     std::string name =
         consume(TokenType::Identifier, "Expected variable's name").getValue<std::string>();
     std::unique_ptr<ExpressionNode> initializer = nullptr;
@@ -286,7 +289,7 @@ std::unique_ptr<DeclarationNode> Parser::parseDeclaration()
     {
         initializer = parseExpression();
     }
-    return std::make_unique<DeclarationNode>(modifier, name, pos, std::move(initializer));
+    return std::make_unique<DeclarationNode>(isVar, std::move(name), pos, std::move(initializer));
 }
 
 // IdOrCallAssign = id, PossibleAssignOrCall ;
@@ -294,7 +297,7 @@ std::unique_ptr<StatementNode> Parser::parseIdOrCallAssign()
 {
     if (!check(TokenType::Identifier)) return nullptr;
     std::string id = consume(TokenType::Identifier, "Expected identifier").getValue<std::string>();
-    return parsePossibleAssignOrCall(id);
+    return parsePossibleAssignOrCall(std::move(id));
 }
 
 // PossibleAssignOrCall = "=" Expression ";" | [ CallArguments ] ";" ;
@@ -306,7 +309,7 @@ std::unique_ptr<StatementNode> Parser::parsePossibleAssignOrCall(std::string id)
         std::unique_ptr<ExpressionNode> expr = parseExpression();
         std::unique_ptr<AssignNode> assigned =
             std::make_unique<AssignNode>(id, startPos, std::move(expr));
-        consume(TokenType::Semicolon, "No semicolan after assign");
+        consume(TokenType::Semicolon, "No semicolon after assign");
         return assigned;
     }
 
@@ -314,7 +317,7 @@ std::unique_ptr<StatementNode> Parser::parsePossibleAssignOrCall(std::string id)
     std::unique_ptr<ExpressionNode> call = parseFunctionCall(std::move(callee));
     std::unique_ptr<ExpressionStatementNode> node =
         std::make_unique<ExpressionStatementNode>(std::move(call));
-    consume(TokenType::Semicolon, "No semicolan after call");
+    consume(TokenType::Semicolon, "No semicolon after call");
     return node;
 }
 
@@ -375,8 +378,8 @@ std::unique_ptr<ExpressionNode> Parser::parseLogicalExpr()
 std::unique_ptr<ExpressionNode> Parser::parseRelExpression()
 {
     std::unique_ptr<ExpressionNode> left = parseSimpleExpression();
-    while (isIn({TokenType::Equal, TokenType::NotEqual, TokenType::Greater,
-                  TokenType::GreaterEqual, TokenType::Less, TokenType::LessEqual}))
+    while (isIn({TokenType::Equal, TokenType::NotEqual, TokenType::Greater, TokenType::GreaterEqual,
+                 TokenType::Less, TokenType::LessEqual}))
     {
         Token operatorToken = advance();
         BinOperator op = getOperator(operatorToken.type);
@@ -439,10 +442,11 @@ std::unique_ptr<ExpressionNode> Parser::parseBaseFactor()
     if (check(TokenType::Number))
     {
         Token numToken = consume(TokenType::Number, "Expected a number");
-        if (std::holds_alternative<int>(numToken.value))
-            return std::make_unique<NumberLiteralNode>(numToken.getValue<int>(),
-                                                       numToken.startPosition);
-        return std::make_unique<NumberLiteralNode>(numToken.getValue<float>(),
+
+        if (auto intValue = std::get_if<int>(&numToken.value))
+            return std::make_unique<NumberLiteralNode>(*intValue, numToken.startPosition);
+
+        return std::make_unique<NumberLiteralNode>(std::get<float>(numToken.value),
                                                    numToken.startPosition);
     }
     if (check(TokenType::StringLiteral))

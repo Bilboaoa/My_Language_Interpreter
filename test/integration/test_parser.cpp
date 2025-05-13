@@ -1117,13 +1117,58 @@ TEST_CASE("Test missing left bracket in statement block", "[parser][error]")
 TEST_CASE("Test missing logical expression in if", "[parser][error][if]")
 {
     ParserTester parserTester("fun a() [var x = 1; if()[x = x + 1;]]");
-    REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(), "SemanticError at 1:24 → Expected an expression");
+    REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(),
+                        "SemanticError at 1:24 → Expected an expression");
 }
 
 TEST_CASE("Test missing logical expression in while", "[parser][error][while]")
 {
     ParserTester parserTester("fun a() [var x = 1; while()[x = x + 1;]]");
-    REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(), "SemanticError at 1:27 → Expected an expression");
+    REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(),
+                        "SemanticError at 1:27 → Expected an expression");
+}
+
+TEST_CASE("Test empty program", "[parser]")
+{
+    ParserTester parserTester("");
+    auto program = parserTester.parser.parseProgram();
+    REQUIRE(program != nullptr);
+    REQUIRE(program->declarations.empty());
+}
+
+TEST_CASE("Test nested blocks", "[parser][blocks]")
+{
+    ParserTester parserTester("fun a() [ [var x = 1;] ]");
+    REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(),
+                        "SemanticError at 1:11 → Expected an expression");
+}
+
+TEST_CASE("Test complex real-world example", "[parser][integration]")
+{
+    ParserTester parserTester(R"(
+        fun factorial(var n) [
+            if (n <= 1) [
+                return 1;
+            ]
+            return n * factorial(n - 1);
+        ]
+        var x = factorial(5);
+    )");
+    auto program = parserTester.parser.parseProgram();
+    REQUIRE(program != nullptr);
+    
+    std::string expected = R"(Fun factorial(Var n)
+ [
+  if (n LessEqual 1)
+   [
+    return 1;
+   ]
+  return n Star factorial(n Minus 1);
+ ]
+Var x = factorial(5);
+)";    
+    std::string programString = program->toStr(0);
+    REQUIRE(programString == expected);
 }
 // Funkcje protected -> dziedziczenie i konwersja na publiczne
 // Lub publiczne -> We wlasciwym dziedziczenie po publicznych zmiana na prywantne
