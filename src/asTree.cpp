@@ -61,15 +61,9 @@ std::string typeToString(CastType type)
 std::string NumberLiteralNode::toStr(int indent) const
 {
     indent += 1;
-    if (std::holds_alternative<int>(value))
-    {
-        return std::to_string(std::get<int>(value));
-    }
-    else if (std::holds_alternative<float>(value))
-    {
-        return std::to_string(std::get<float>(value));
-    }
-    return "<unknown number>";
+    return std::visit([](auto arg) {
+        return std::to_string(arg);
+    }, value);
 }
 
 std::string StringLiteralNode::toStr(int indent) const
@@ -145,8 +139,8 @@ std::string FunctionDeclarationNode::toStr(int indent) const
     std::string result = std::string(indent, ' ') + "Fun " + name + "(";
     for (size_t i = 0; i < params.size(); ++i)
     {
-        std::string mod = params[i].modifier ? "Var" : "Const";
-        result += mod + " " + params[i].id;
+        std::string mod = params[i]->modifier ? "Var" : "Const";
+        result += mod + " " + params[i]->id;
         if (i < params.size() - 1)
         {
             result += ", ";
@@ -161,8 +155,8 @@ std::string FunctionLiteralNode::toStr(int indent) const
     std::string result = "Fun(";
     for (size_t i = 0; i < parameters.size(); ++i)
     {
-        std::string mod = parameters[i].modifier ? "Var" : "Const";
-        result += mod + " " + parameters[i].id;
+        std::string mod = parameters[i]->modifier ? "Var" : "Const";
+        result += mod + " " + parameters[i]->id;
         if (i < parameters.size() - 1)
         {
             result += ", ";

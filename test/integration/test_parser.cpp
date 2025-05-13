@@ -1114,6 +1114,17 @@ TEST_CASE("Test missing left bracket in statement block", "[parser][error]")
     REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(), "SemanticError at 1:9 → Expected '['");
 }
 
+TEST_CASE("Test missing logical expression in if", "[parser][error][if]")
+{
+    ParserTester parserTester("fun a() [var x = 1; if()[x = x + 1;]]");
+    REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(), "SemanticError at 1:24 → Expected an expression");
+}
+
+TEST_CASE("Test missing logical expression in while", "[parser][error][while]")
+{
+    ParserTester parserTester("fun a() [var x = 1; while()[x = x + 1;]]");
+    REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(), "SemanticError at 1:27 → Expected an expression");
+}
 // Funkcje protected -> dziedziczenie i konwersja na publiczne
 // Lub publiczne -> We wlasciwym dziedziczenie po publicznych zmiana na prywantne
 // Mozna wziac drzewo AST i konwersja na string po czym sprawdzac w testach

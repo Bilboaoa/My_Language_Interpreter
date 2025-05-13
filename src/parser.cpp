@@ -50,9 +50,9 @@ namespace
         std::string type = typeToken.getValue<std::string>();
         if (type == "string")
             return CastType::String;
-        else if (type == "float")
+        if (type == "float")
             return CastType::Float;
-        else if (type == "int")
+        if (type == "int")
             return CastType::Int;
         throw InterpreterException(ErrorType::Semantic, "Unexpected token type" + type, typeToken.startPosition);
     }
@@ -105,20 +105,24 @@ InterpreterException Parser::error(const std::string& message) const
 std::unique_ptr<ProgramNode> Parser::parseProgram()
 {
     std::vector<std::unique_ptr<AstNode>> declarations;
-    while (!check(TokenType::EndOfFile))
+    std::unique_ptr<DeclarationNode> declaration;
+    std::unique_ptr<FunctionDeclarationNode> funcDeclaration;
+    while ((funcDeclaration = parseFunctionDeclaration()) || (declaration = parseDeclaration()))
     {
-        if (auto funcDeclaration = parseFunctionDeclaration())
+        if (funcDeclaration != nullptr)
         {
             declarations.push_back(std::move(funcDeclaration));
         }
-        else if (auto declaration = parseDeclaration())
+        else if (declaration != nullptr)
         {
             consume(TokenType::Semicolon, "Expected ';' after declaration while parsing program");
             declarations.push_back(std::move(declaration));
         }
-        else
-            throw error("Unexpected token in between declarations");
+        declaration = nullptr;
+        funcDeclaration = nullptr;
     }
+    if (!check(TokenType::EndOfFile))
+        throw error("Unexpected token in between declarations");
     return std::make_unique<ProgramNode>(std::move(declarations));
 }
 
@@ -131,39 +135,46 @@ std::unique_ptr<FunctionDeclarationNode> Parser::parseFunctionDeclaration()
     std::string name =
         consume(TokenType::Identifier, "Expected function's name").getValue<std::string>();
     consume(TokenType::LParen, "Expected '('");
-    std::vector<FuncDefArgument> params = parseParameters();
+    std::vector<std::unique_ptr<FuncDefArgument>> params = parseParameters();
     consume(TokenType::RParen, "Expected ')'");
     std::unique_ptr<StatementBlockNode> body = parseStatementBlock();
 
-    return std::make_unique<FunctionDeclarationNode>(name, startPos, params, std::move(body));
+    return std::make_unique<FunctionDeclarationNode>(name, startPos, std::move(params), std::move(body));
 }
 
 // Parameters = Parameter, {“,”, Parameter }
-// Parameter       = (“const” | “var”), id ;
-std::vector<FuncDefArgument> Parser::parseParameters()
+std::vector<std::unique_ptr<FuncDefArgument>> Parser::parseParameters()
 {
-    std::vector<FuncDefArgument> params;
-    if (!check(TokenType::RParen))
-    {
-        do
-        {
-            bool mod;
-            if (match({TokenType::Const}))
-            {
-                mod = false;
-            }
-            else if (match({TokenType::Var}))
-            {
-                mod = true;
-            }
-            else
-                throw error("Expected 'const' or 'var'");
-            std::string tmpId =
-                consume(TokenType::Identifier, "Expected param's name").getValue<std::string>();
-            params.push_back(FuncDefArgument{mod, tmpId});
-        } while (match({TokenType::Comma}));
+    std::vector<std::unique_ptr<FuncDefArgument>> params;
+    auto param = parseParameter();
+    if (!param) { return {}; }
+    params.push_back(std::move(param));
+    while(match({TokenType::Comma}))
+    {   
+        param = parseParameter();
+        if (!param) { throw error("Expected 'const' or 'var'"); }
+        params.push_back(std::move(param));
     }
     return params;
+}
+
+// Parameter       = (“const” | “var”), id ;
+std::unique_ptr<FuncDefArgument> Parser::parseParameter()
+{
+    if (!check({TokenType::Const}) && !check({TokenType::Var}))
+        return nullptr;
+    bool mod;
+    if (match({TokenType::Const}))
+    {
+        mod = false;
+    }
+    else if (match({TokenType::Var}))
+    {
+        mod = true;
+    }
+    std::string tmpId =
+        consume(TokenType::Identifier, "Expected param's name").getValue<std::string>();
+    return std::make_unique<FuncDefArgument>(FuncDefArgument{mod, tmpId});
 }
 
 // StatementBlock = “[“, { Statement }, “]” ;
@@ -216,7 +227,7 @@ std::unique_ptr<StatementNode> Parser::parseStatement()
 std::unique_ptr<IfStatementNode> Parser::parseIfStatement()
 {
     if (!check(TokenType::If)) return nullptr;
-    Position startPos = currentToken.startPosition;
+    const Position startPos = currentToken.startPosition;
     consume(TokenType::If, "Expected 'if'");
     consume(TokenType::LParen, "Expected '('");
     std::unique_ptr<ExpressionNode> condition = parseLogicalExpr();
@@ -468,9 +479,9 @@ std::unique_ptr<FunctionLiteralNode> Parser::parseFunctionLiteral()
     Position startPos = currentToken.startPosition;
     Token funToken = consume(TokenType::Fun, "Expected 'fun'");
     Token lParenToken = consume(TokenType::LParen, "Expected '('");
-    std::vector<FuncDefArgument> parameters = parseParameters();
+    std::vector<std::unique_ptr<FuncDefArgument>> parameters = parseParameters();
     Token rParenToken = consume(TokenType::RParen, "Expected ')'");
     std::unique_ptr<StatementBlockNode> body = parseStatementBlock();
 
-    return std::make_unique<FunctionLiteralNode>(startPos, parameters, std::move(body));
+    return std::make_unique<FunctionLiteralNode>(startPos, std::move(parameters), std::move(body));
 }

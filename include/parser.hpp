@@ -29,7 +29,8 @@ class Parser
     InterpreterException error(const std::string& message) const;
 
     std::unique_ptr<FunctionDeclarationNode> parseFunctionDeclaration();
-    std::vector<FuncDefArgument> parseParameters();
+    std::vector<std::unique_ptr<FuncDefArgument>> parseParameters();
+    std::unique_ptr<FuncDefArgument> parseParameter();
     std::unique_ptr<StatementBlockNode> parseStatementBlock();
     std::unique_ptr<StatementNode> parseStatement();
     std::unique_ptr<IfStatementNode> parseIfStatement();

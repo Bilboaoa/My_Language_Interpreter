@@ -167,11 +167,11 @@ class FunctionDeclarationNode : public AstNode
     std::string name;
     Position pos;
    public:
-    std::vector<FuncDefArgument> params;
+    std::vector<std::unique_ptr<FuncDefArgument>> params;
     std::unique_ptr<StatementBlockNode> body;
-    FunctionDeclarationNode(std::string n, Position p, std::vector<FuncDefArgument> param,
+    FunctionDeclarationNode(std::string n, Position p, std::vector<std::unique_ptr<FuncDefArgument>> param,
                             std::unique_ptr<StatementBlockNode> bod)
-        : name(n), pos(p), params(param), body(std::move(bod))
+        : name(n), pos(p), params(std::move(param)), body(std::move(bod))
     {
     }
     Position getStartPosition() const override { return pos; }
@@ -183,9 +183,9 @@ class FunctionLiteralNode : public ExpressionNode
 {
     Position pos;
    public:
-    std::vector<FuncDefArgument> parameters;
+    std::vector<std::unique_ptr<FuncDefArgument>> parameters;
     std::unique_ptr<StatementBlockNode> body;
-    FunctionLiteralNode(Position p, std::vector<FuncDefArgument> parameters,
+    FunctionLiteralNode(Position p, std::vector<std::unique_ptr<FuncDefArgument>> parameters,
                         std::unique_ptr<StatementBlockNode> body)
         : pos(p), parameters(std::move(parameters)), body(std::move(body))
     {
