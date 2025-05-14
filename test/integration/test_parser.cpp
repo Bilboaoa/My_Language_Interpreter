@@ -121,6 +121,22 @@ TEST_CASE("Test Minimal function Declaration with body and wrong arguments",
     }
 }
 
+TEST_CASE("Test Minimal function Declaration with body and comma after an argument",
+          "[parser][function][assign]")
+{
+    ParserTester parserTester("fun a(var a, const b,) [a=2;]");
+    try
+    {
+        auto program = parserTester.parser.parseProgram();
+    }
+    catch (const InterpreterException& ex)
+    {
+        REQUIRE(ex.error.type == ErrorType::Semantic);
+        REQUIRE(ex.error.message == "Expected 'const' or 'var'");
+        REQUIRE(ex.error.startPosition == Position(1, 22));
+    }
+}
+
 TEST_CASE("Test Minimal function Declaration with no identifier (not lambda)", "[parser][function]")
 {
     ParserTester parserTester("fun (var b, var c) [b=2;]");
@@ -201,7 +217,7 @@ TEST_CASE("Test assign with nothing after =", "[parser][assign][error]")
     catch (const InterpreterException& ex)
     {
         REQUIRE(ex.error.type == ErrorType::Semantic);
-        REQUIRE(ex.error.message == "Expected an expression");
+        REQUIRE(ex.error.message == "Expected an expression after assign");
         REQUIRE(ex.error.startPosition == Position(1, 7));
     }
 }
@@ -327,6 +343,31 @@ TEST_CASE("Test function call as statement", "[parser][function][call]")
  ]
 )";
     REQUIRE(program->toStr(0) == expected);
+}
+
+TEST_CASE("Test call with 2 parethesis", "[parser][function][call]")
+{
+    ParserTester parserTester(
+        "fun a() [return 1;]\n fun b() [return a;]\n fun c() [var d=b()();]");
+    auto program = parserTester.parser.parseProgram();
+    REQUIRE(program != nullptr);
+    REQUIRE(program->declarations.size() == 3);
+
+    std::string expected = R"(Fun a()
+ [
+  return 1;
+ ]
+Fun b()
+ [
+  return a;
+ ]
+Fun c()
+ [
+  Var d = b()();
+ ]
+)";
+    std::string programString = program->toStr(0);
+    REQUIRE(programString == expected);
 }
 
 TEST_CASE("Test assign function to a variable", "[parser][function][assign]")
@@ -1099,7 +1140,7 @@ TEST_CASE("Test invalid expression after operator", "[parser][error]")
 {
     ParserTester parserTester("fun a() [var x = 1 + ;]");
     REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(),
-                        "SemanticError at 1:22 → Expected an expression");
+                        "SemanticError at 1:22 → Expected expression after operator while parsing simpleExpression");
 }
 
 TEST_CASE("Test missing right bracket in statement block", "[parser][error]")
@@ -1118,14 +1159,14 @@ TEST_CASE("Test missing logical expression in if", "[parser][error][if]")
 {
     ParserTester parserTester("fun a() [var x = 1; if()[x = x + 1;]]");
     REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(),
-                        "SemanticError at 1:24 → Expected an expression");
+                        "SemanticError at 1:24 → Expected logical expression in if");
 }
 
 TEST_CASE("Test missing logical expression in while", "[parser][error][while]")
 {
     ParserTester parserTester("fun a() [var x = 1; while()[x = x + 1;]]");
     REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(),
-                        "SemanticError at 1:27 → Expected an expression");
+                        "SemanticError at 1:27 → Expected logical expression in while");
 }
 
 TEST_CASE("Test empty program", "[parser]")
@@ -1140,7 +1181,7 @@ TEST_CASE("Test nested blocks", "[parser][blocks]")
 {
     ParserTester parserTester("fun a() [ [var x = 1;] ]");
     REQUIRE_THROWS_WITH(parserTester.parser.parseProgram(),
-                        "SemanticError at 1:11 → Expected an expression");
+                        "SemanticError at 1:11 → Expected ']'");
 }
 
 TEST_CASE("Test complex real-world example", "[parser][integration]")
@@ -1156,7 +1197,7 @@ TEST_CASE("Test complex real-world example", "[parser][integration]")
     )");
     auto program = parserTester.parser.parseProgram();
     REQUIRE(program != nullptr);
-    
+
     std::string expected = R"(Fun factorial(Var n)
  [
   if (n LessEqual 1)
@@ -1166,7 +1207,7 @@ TEST_CASE("Test complex real-world example", "[parser][integration]")
   return n Star factorial(n Minus 1);
  ]
 Var x = factorial(5);
-)";    
+)";
     std::string programString = program->toStr(0);
     REQUIRE(programString == expected);
 }
