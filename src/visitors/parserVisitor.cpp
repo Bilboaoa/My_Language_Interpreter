@@ -1,6 +1,7 @@
 #include "parserVisitor.hpp"
 #include <string>
 #include <variant>
+#include <iostream> // Dodane dla debugowania
 
 namespace
 {
@@ -56,47 +57,50 @@ std::string typeToString(CastType type)
     }
 }
 
-}  // namespace
-
-void ParserVisitor::visit(NumberLiteralNode& node, int indent)
+std::string indent(int level)
 {
-    indent++;
-    outcome.push_back(std::visit([](auto arg) { return std::to_string(arg); }, node.getValue()));
+    return std::string(level, ' ');
 }
 
-void ParserVisitor::visit(StringLiteralNode& node, int indent)
+}  // namespace
+
+void ParserVisitor::visit(NumberLiteralNode& node)
 {
-    indent++;
+    outcome.push_back(std::visit([](auto arg)
+                                { return std::to_string(arg); },
+                                node.getValue()));
+}
+
+void ParserVisitor::visit(StringLiteralNode& node)
+{
     outcome.push_back("\"" + node.getValue() + "\"");
 }
 
-void ParserVisitor::visit(IdentifierNode& node, int indent)
+void ParserVisitor::visit(IdentifierNode& node)
 {
-    indent++;
     outcome.push_back(node.getName());
 }
 
-void ParserVisitor::visit(BinaryOpNode& node, int indent)
+void ParserVisitor::visit(BinaryOpNode& node)
 {
-    std::string result = "";
-    node.left->accept(*this, indent + 1);
+    node.left->accept(*this);
     outcome.push_back(" " + operatorToString(node.getBinOp()) + " ");
-    node.right->accept(*this, indent + 1);
+    node.right->accept(*this);
 }
 
-void ParserVisitor::visit(TypeCastNode& node, int indent)
+void ParserVisitor::visit(TypeCastNode& node)
 {
-    node.expression->accept(*this, indent + 1);
+    node.expression->accept(*this);
     outcome.push_back(" As " + typeToString(node.getTargetType()));
 }
 
-void ParserVisitor::visit(FunctionCallNode& node, int indent)
+void ParserVisitor::visit(FunctionCallNode& node)
 {
-    node.callee->accept(*this, indent + 1);
+    node.callee->accept(*this);
     outcome.push_back("(");
     for (size_t i = 0; i < node.arguments.size(); ++i)
     {
-        node.arguments[i]->accept(*this, indent + 1);
+        node.arguments[i]->accept(*this);
         if (i < node.arguments.size() - 1)
         {
             outcome.push_back(", ");
@@ -105,27 +109,29 @@ void ParserVisitor::visit(FunctionCallNode& node, int indent)
     outcome.push_back(")");
 }
 
-void ParserVisitor::visit(ExpressionStatementNode& node, int indent)
+void ParserVisitor::visit(ExpressionStatementNode& node)
 {
-    outcome.push_back(std::string(indent, ' '));
-    node.expression->accept(*this, indent + 1);
+    node.expression->accept(*this);
     outcome.push_back(";");
 }
 
-void ParserVisitor::visit(StatementBlockNode& node, int indent)
+void ParserVisitor::visit(StatementBlockNode& node)
 {
-    outcome.push_back(std::string(indent, ' ') + "[\n");
+    outcome.push_back("[\n");
+    indentation++;
     for (const auto& stmt : node.statements)
     {
-        stmt->accept(*this, indent + 1);
+        outcome.push_back(indent(indentation));
+        stmt->accept(*this);
         outcome.push_back("\n");
     }
-    outcome.push_back(std::string(indent, ' ') + "]");
+    indentation--;
+    outcome.push_back(indent(indentation) + "]");
 }
 
-void ParserVisitor::visit(FunctionDeclarationNode& node, int indent)
+void ParserVisitor::visit(FunctionDeclarationNode& node)
 {
-    outcome.push_back(std::string(indent, ' ') + "Fun " + node.getName() + "(");
+    outcome.push_back("Fun " + node.getName() + "(");
     for (size_t i = 0; i < node.params.size(); ++i)
     {
         std::string paramBlock;
@@ -138,10 +144,13 @@ void ParserVisitor::visit(FunctionDeclarationNode& node, int indent)
         outcome.push_back(paramBlock);
     }
     outcome.push_back(")\n");
-    node.body->accept(*this, indent + 1);
+    indentation++;
+    outcome.push_back(indent(indentation));
+    node.body->accept(*this);
+    indentation--;
 }
 
-void ParserVisitor::visit(FunctionLiteralNode& node, int indent)
+void ParserVisitor::visit(FunctionLiteralNode& node)
 {
     outcome.push_back("Fun(");
     for (size_t i = 0; i < node.parameters.size(); ++i)
@@ -156,68 +165,79 @@ void ParserVisitor::visit(FunctionLiteralNode& node, int indent)
         outcome.push_back(paramBlock);
     }
     outcome.push_back(")\n");
-    node.body->accept(*this, indent + 1);
+    indentation++;
+    outcome.push_back(indent(indentation));
+    node.body->accept(*this);
+    indentation--;
 }
 
-void ParserVisitor::visit(IfStatementNode& node, int indent)
+void ParserVisitor::visit(IfStatementNode& node)
 {
-    outcome.push_back(std::string(indent, ' ') + "if (");
-    node.condition->accept(*this, indent + 1);
-    outcome.push_back(")\n"); 
-    node.thenBlock->accept(*this, indent + 1);
+    outcome.push_back("if (");
+    node.condition->accept(*this);
+    outcome.push_back(")\n");
+    indentation++;
+    outcome.push_back(indent(indentation));
+    node.thenBlock->accept(*this);
+    indentation--;
 
     if (node.elseBlock)
     {
         outcome.push_back(" else\n");
-        node.elseBlock->accept(*this, indent + 1);
+        indentation++;
+        outcome.push_back(indent(indentation));
+        node.elseBlock->accept(*this);
+        indentation--;
     }
 }
 
-void ParserVisitor::visit(DeclarationNode& node, int indent)
+void ParserVisitor::visit(DeclarationNode& node)
 {
     std::string mod = node.getModifier() ? "Var" : "Const";
-    std::string result = std::string(indent, ' ') + mod + " " + node.getIdentifierName();
+    std::string result = mod + " " + node.getIdentifierName();
     outcome.push_back(result);
     if (node.initializer)
     {
         outcome.push_back(" = ");
-        node.initializer->accept(*this, indent + 1);
+        node.initializer->accept(*this);
     }
     outcome.push_back(";");
-    
 }
 
-void ParserVisitor::visit(ReturnStatementNode& node, int indent)
+void ParserVisitor::visit(ReturnStatementNode& node)
 {
-    outcome.push_back(std::string(indent, ' ') + "return");
+    outcome.push_back("return");
     if (node.returnValue)
     {
         outcome.push_back(" ");
-        node.returnValue->accept(*this, indent + 1);
+        node.returnValue->accept(*this);
     }
     outcome.push_back(";");
 }
 
-void ParserVisitor::visit(AssignNode& node, int indent)
+void ParserVisitor::visit(AssignNode& node)
 {
-    outcome.push_back(std::string(indent, ' ') + node.getIdentifierName() + " = ");
-    node.expression->accept(*this, indent + 1); 
+    outcome.push_back(node.getIdentifierName() + " = ");
+    node.expression->accept(*this);
     outcome.push_back(";");
 }
 
-void ParserVisitor::visit(WhileStatementNode& node, int indent)
+void ParserVisitor::visit(WhileStatementNode& node)
 {
-    outcome.push_back(std::string(indent, ' ') + "While ("); 
-    node.condition->accept(*this, indent + 1);
+    outcome.push_back("While (");
+    node.condition->accept(*this);
     outcome.push_back(")\n");
-    node.body->accept(*this, indent + 1);
+    indentation++;
+    outcome.push_back(indent(indentation));
+    node.body->accept(*this);
+    indentation--;
 }
 
-void ParserVisitor::visit(ProgramNode& node, int indent)
+void ParserVisitor::visit(ProgramNode& node)
 {
     for (const auto& decl : node.declarations)
     {
-        decl->accept(*this, indent);
+        decl->accept(*this);
         outcome.push_back("\n");
     }
 }
@@ -225,7 +245,9 @@ void ParserVisitor::visit(ProgramNode& node, int indent)
 std::string ParserVisitor::getParsedString() const
 {
     std::string parsedString = "";
-    for (std::string str : outcome)
+    for (const std::string& str : outcome)
+    {
         parsedString += str;
+    }
     return parsedString;
 }

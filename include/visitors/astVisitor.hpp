@@ -24,20 +24,20 @@ class AstVisitor
 {
    public:
     virtual ~AstVisitor() = default;
-    virtual void visit(NumberLiteralNode& node, int indent) = 0;
-    virtual void visit(StringLiteralNode& node, int indent) = 0;
-    virtual void visit(IdentifierNode& node, int indent) = 0;
-    virtual void visit(BinaryOpNode& node, int indent) = 0;
-    virtual void visit(TypeCastNode& node, int indent) = 0;
-    virtual void visit(FunctionCallNode& node, int indent) = 0;
-    virtual void visit(ExpressionStatementNode& node, int indent) = 0;
-    virtual void visit(StatementBlockNode& node, int indent) = 0;
-    virtual void visit(FunctionDeclarationNode& node, int indent) = 0;
-    virtual void visit(FunctionLiteralNode& node, int indent) = 0;
-    virtual void visit(IfStatementNode& node, int indent) = 0;
-    virtual void visit(DeclarationNode& node, int indent) = 0;
-    virtual void visit(ReturnStatementNode& node, int indent) = 0;
-    virtual void visit(AssignNode& node, int indent) = 0;
-    virtual void visit(WhileStatementNode& node, int indent) = 0;
-    virtual void visit(ProgramNode& node, int indent) = 0;
+    virtual void visit(NumberLiteralNode& node) = 0;
+    virtual void visit(StringLiteralNode& node) = 0;
+    virtual void visit(IdentifierNode& node) = 0;
+    virtual void visit(BinaryOpNode& node) = 0;
+    virtual void visit(TypeCastNode& node) = 0;
+    virtual void visit(FunctionCallNode& node) = 0;
+    virtual void visit(ExpressionStatementNode& node) = 0;
+    virtual void visit(StatementBlockNode& node) = 0;
+    virtual void visit(FunctionDeclarationNode& node) = 0;
+    virtual void visit(FunctionLiteralNode& node) = 0;
+    virtual void visit(IfStatementNode& node) = 0;
+    virtual void visit(DeclarationNode& node) = 0;
+    virtual void visit(ReturnStatementNode& node) = 0;
+    virtual void visit(AssignNode& node) = 0;
+    virtual void visit(WhileStatementNode& node) = 0;
+    virtual void visit(ProgramNode& node) = 0;
 };

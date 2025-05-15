@@ -6,26 +6,27 @@
 
 class ParserVisitor : public AstVisitor
 {
-   protected:
-    std::vector<std::string> outcome;
-
-    void visit(NumberLiteralNode& node, int indent) override;
-    void visit(StringLiteralNode& node, int indent) override;
-    void visit(IdentifierNode& node, int indent) override;
-    void visit(BinaryOpNode& node, int indent) override;
-    void visit(TypeCastNode& node, int indent) override;
-    void visit(FunctionCallNode& node, int indent) override;
-    void visit(ExpressionStatementNode& node, int indent) override;
-    void visit(StatementBlockNode& node, int indent) override;
-    void visit(FunctionDeclarationNode& node, int indent) override;
-    void visit(FunctionLiteralNode& node, int indent) override;
-    void visit(IfStatementNode& node, int indent) override;
-    void visit(DeclarationNode& node, int indent) override;
-    void visit(ReturnStatementNode& node, int indent) override;
-    void visit(AssignNode& node, int indent) override;
-    void visit(WhileStatementNode& node, int indent) override;
-
-   public:
-    void visit(ProgramNode& node, int indent) override;
+public:
+    void visit(ProgramNode& node) override;
     std::string getParsedString() const;
+
+protected:
+    std::vector<std::string> outcome;
+    int indentation = 0;
+
+    void visit(NumberLiteralNode& node) override;
+    void visit(StringLiteralNode& node) override;
+    void visit(IdentifierNode& node) override;
+    void visit(BinaryOpNode& node) override;
+    void visit(TypeCastNode& node) override;
+    void visit(FunctionCallNode& node) override;
+    void visit(ExpressionStatementNode& node) override;
+    void visit(StatementBlockNode& node) override;
+    void visit(FunctionDeclarationNode& node) override;
+    void visit(FunctionLiteralNode& node) override;
+    void visit(IfStatementNode& node) override;
+    void visit(DeclarationNode& node) override;
+    void visit(ReturnStatementNode& node) override;
+    void visit(AssignNode& node) override;
+    void visit(WhileStatementNode& node) override;
 };

@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 
     std::unique_ptr<ProgramNode> program = parser.parseProgram();
     ParserVisitor myVisitor;
-    program->accept(myVisitor, 0);
+    program->accept(myVisitor);
     std::cout << myVisitor.getParsedString() << std::endl;
     return 0;
 }

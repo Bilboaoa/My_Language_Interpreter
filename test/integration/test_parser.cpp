@@ -27,7 +27,7 @@ TEST_CASE("Test Minimal Declaration", "[parser][declaration]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Var x;\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -42,7 +42,7 @@ TEST_CASE("Test Minimal const Declaration", "[parser][declaration]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Const x;\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -57,7 +57,7 @@ TEST_CASE("Test multiple Minimal const Declaration", "[parser][declaration]")
     REQUIRE(program->declarations.size() == 3);
 
     std::string expected = "Const x;\nVar z;\nConst y;\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -72,7 +72,7 @@ TEST_CASE("Test Minimal function Declaration", "[parser][function]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -87,7 +87,7 @@ TEST_CASE("Test Minimal function Declaration with body", "[parser][function][ass
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n  Var a = 2;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -103,7 +103,7 @@ TEST_CASE("Test Minimal function Declaration with body and one argument",
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a(Var a)\n [\n  a = 2;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -119,7 +119,7 @@ TEST_CASE("Test Minimal function Declaration with body and many arguments",
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a(Var a, Const b, Var c)\n [\n  a = 2;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -196,7 +196,7 @@ TEST_CASE("Test assign with float", "[parser][assign]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Var a = 2.100000;\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -211,7 +211,7 @@ TEST_CASE("Test assign with string literal", "[parser][assign][string]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Var a = \"abc\";\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -226,11 +226,11 @@ TEST_CASE("Test assign with function literal (no args)", "[parser][assign][funct
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = R"(Var a = Fun()
-  [
-   return 1;
-  ];
+ [
+  return 1;
+ ];
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -260,11 +260,11 @@ TEST_CASE("Test assign with function literal (with args)", "[parser][assign][fun
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = R"(Var a = Fun(Var a, Const b)
-  [
-   return a;
-  ];
+ [
+  return a;
+ ];
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -279,7 +279,7 @@ TEST_CASE("Test assign after declaration", "[parser][function][assign]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n  Var a;\n  a = 2;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -294,7 +294,7 @@ TEST_CASE("Test function declaration with return", "[parser][function][return]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n  Var a = 2;\n  return a;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -309,7 +309,7 @@ TEST_CASE("Test function declaration with empty return", "[parser][function][ass
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n  Var b = 2;\n  return;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -331,7 +331,7 @@ TEST_CASE("Test function call within return", "[parser][function][return][call]"
 
     std::string expected =
         "Fun a()\n [\n  Var c = 2;\n  return c;\n ]\nFun b()\n [\n  return a();\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -349,7 +349,7 @@ TEST_CASE("Test complex expression within return", "[parser][function][return][c
     std::string expected =
         "Fun a()\n [\n  Var c = 2;\n  return c;\n ]\nFun b()\n [\n  Var q = 1;\n  return a() Star "
         "q Slash 10;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -365,7 +365,7 @@ TEST_CASE("Test function call within assign", "[parser][function][assign][call]"
 
     std::string expected =
         "Fun a(Var s)\n [\n  Var c = 2;\n  return c;\n ]\nVar b = a(1) Plus 1;\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -381,7 +381,7 @@ TEST_CASE("Test function call with complex arguments", "[parser][function][call]
   Var x = b(1 Plus 2, c(3), 4);
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -396,7 +396,7 @@ TEST_CASE("Test function call as statement", "[parser][function][call]")
   b(1);
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -422,7 +422,7 @@ Fun c()
   Var d = b()();
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -436,7 +436,7 @@ TEST_CASE("Test assign function to a variable", "[parser][function][assign]")
     REQUIRE(program->declarations.size() == 2);
 
     std::string expected = "Fun a(Var s)\n [\n  Var c = 2;\n  return c;\n ]\nVar b = a;\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -450,7 +450,7 @@ TEST_CASE("Test function declaration with add", "[parser][function][plus]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n  Var a = 2 Plus 2;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -464,7 +464,7 @@ TEST_CASE("Test function declaration with sub", "[parser][function][minus]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n  Var a = 2 Minus 2;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -478,7 +478,7 @@ TEST_CASE("Test function declaration with mult", "[parser][function][star]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n  Var a = 2 Star 2;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -493,7 +493,7 @@ TEST_CASE("Test function declaration with division", "[parser][function][slash]"
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n  Var a = 2 Slash 2;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -508,7 +508,7 @@ TEST_CASE("Test function declaration with @@", "[parser][function][AtAt]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n  Var a = 2 AtAt 1;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -522,7 +522,7 @@ TEST_CASE("Test function declaration with |", "[parser][function][Pipe]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n  Var a = 2 Pipe 1;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -550,7 +550,7 @@ Fun c()
   Var d = a() Pipe b();
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -564,7 +564,7 @@ TEST_CASE("Test declaration with assigned string concatination", "[parser][Plus]
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Var a = \"abc\" Plus \"de\";\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -582,7 +582,7 @@ TEST_CASE("Test nested arithmetic expressions", "[parser][arithmetic]")
   Var x = 1 Plus 2 Star 3 Slash 4 Minus 5;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -599,7 +599,7 @@ TEST_CASE("Test nested arithmetic expressions with parentheses", "[parser][arith
   Var x = 1 Plus 2 Star 3 Slash 4 Minus 5;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -615,7 +615,7 @@ TEST_CASE("Test complex expression with 2 parentheses", "[parser][expression]")
   Var x = 1 Plus 2 Star 3 Minus 4;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -630,7 +630,7 @@ TEST_CASE("Test complex expression as statement", "[parser][expression]")
   1 Plus 2 Star 3 Minus 4;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -647,7 +647,7 @@ TEST_CASE("Test nested arithmetic expressions with parentheses at start", "[pars
   Var x = 1 Plus 2 Star 3 Slash 4 Minus 5;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -662,14 +662,14 @@ TEST_CASE("Test function concatination with function literal (with args)",
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = R"(Var h = Fun(Var a, Const b)
-   [
-    return a;
-   ] Pipe Fun(Var b)
-   [
-    return b;
-   ];
+ [
+  return a;
+ ] Pipe Fun(Var b)
+ [
+  return b;
+ ];
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -683,7 +683,7 @@ TEST_CASE("Test type cast with int", "[parser][function][type][cast]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n  Var a = 2 As int;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -697,7 +697,7 @@ TEST_CASE("Test type cast with float", "[parser][function][type][cast]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n  Var a = 2 As float;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -711,7 +711,7 @@ TEST_CASE("Test type cast with string", "[parser][function][type][cast]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Fun a()\n [\n  Var a = 2 As string;\n ]\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -725,7 +725,7 @@ TEST_CASE("Test type cast with multiple types", "[parser][type][cast]")
     REQUIRE(program->declarations.size() == 1);
 
     std::string expected = "Var a = 2 As float As string;\n";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -747,7 +747,7 @@ TEST_CASE("Test basic If", "[parser][If][Less]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -769,7 +769,7 @@ TEST_CASE("Test basic If greater", "[parser][If][Greater]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -791,7 +791,7 @@ TEST_CASE("Test basic If LessEqual", "[parser][If][LessEqual]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -813,7 +813,7 @@ TEST_CASE("Test basic If GreaterEqual", "[parser][If][GreaterEqual]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -835,7 +835,7 @@ TEST_CASE("Test basic If Equal", "[parser][If][Equal]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -857,7 +857,7 @@ TEST_CASE("Test basic If Equal with strings", "[parser][If][Equal]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -881,7 +881,7 @@ TEST_CASE("Test basic If Equal with ids", "[parser][If][Equal]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -907,7 +907,7 @@ Fun a()
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -931,7 +931,7 @@ TEST_CASE("Test If with else", "[parser][If][else]")
    ]
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -953,7 +953,7 @@ TEST_CASE("Test If with and", "[parser][If][and]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -975,7 +975,7 @@ TEST_CASE("Test If with or", "[parser][If][or]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -994,7 +994,7 @@ TEST_CASE("Test empty if statement", "[parser][if]")
    ]
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -1015,7 +1015,7 @@ TEST_CASE("Test If with more advanced logic", "[parser][If][or][and]")
    ]
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -1037,7 +1037,7 @@ TEST_CASE("Test basic While", "[parser][While][Less]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -1059,7 +1059,7 @@ TEST_CASE("Test basic While greater", "[parser][While][Greater]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -1081,7 +1081,7 @@ TEST_CASE("Test basic While LessEqual", "[parser][While][LessEqual]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -1103,7 +1103,7 @@ TEST_CASE("Test basic While GreaterEqual", "[parser][While][GreaterEqual]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -1125,7 +1125,7 @@ TEST_CASE("Test basic While Equal", "[parser][While][Equal]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -1147,7 +1147,7 @@ TEST_CASE("Test basic While Equal with strings", "[parser][While][Equal]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -1171,7 +1171,7 @@ TEST_CASE("Test basic While Equal with ids", "[parser][While][Equal]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -1197,7 +1197,7 @@ Fun a()
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -1219,7 +1219,7 @@ TEST_CASE("Test while with and", "[parser][while][and]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -1241,7 +1241,7 @@ TEST_CASE("Test while with or", "[parser][while][or]")
   return 2;
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -1260,7 +1260,7 @@ TEST_CASE("Test empty while statement", "[parser][while]")
    ]
  ]
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }
@@ -1359,7 +1359,7 @@ TEST_CASE("Test complex real-world example", "[parser][integration]")
  ]
 Var x = factorial(5);
 )";
-    program->accept(visitor, 0);
+    program->accept(visitor);
     std::string programString = visitor.getParsedString();
     REQUIRE(programString == expected);
 }

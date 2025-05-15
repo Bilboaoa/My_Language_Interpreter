@@ -48,7 +48,7 @@ class AstNode
    public:
     virtual ~AstNode() = default;
     virtual Position getStartPosition() const = 0;
-    virtual void accept(AstVisitor& visitor, int indent) = 0;
+    virtual void accept(AstVisitor& visitor) = 0;
 };
 
 class ExpressionNode : public AstNode
@@ -63,7 +63,7 @@ class NumberLiteralNode : public ExpressionNode
    public:
     NumberLiteralNode(std::variant<int, float> val, Position p) : value(val), pos(p) {}
     Position getStartPosition() const override { return pos; }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
     std::variant<int, float> getValue() const { return value; }
 };
 
@@ -75,7 +75,7 @@ class StringLiteralNode : public ExpressionNode
    public:
     StringLiteralNode(std::string v, Position p) : val(v), pos(p) {}
     Position getStartPosition() const override { return pos; }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
     std::string getValue() const { return val; }
 };
 
@@ -87,7 +87,7 @@ class IdentifierNode : public ExpressionNode
    public:
     IdentifierNode(std::string n, Position p) : name(n), pos(p) {}
     Position getStartPosition() const override { return pos; }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
     std::string getName() const { return name; }
 };
 
@@ -105,7 +105,7 @@ class BinaryOpNode : public ExpressionNode
     }
     Position getStartPosition() const override { return left->getStartPosition(); }
     BinOperator getBinOp() const { return binOp; }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
 };
 
 class TypeCastNode : public ExpressionNode
@@ -119,7 +119,7 @@ class TypeCastNode : public ExpressionNode
     {
     }
     Position getStartPosition() const override { return expression->getStartPosition(); }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
     CastType getTargetType() const { return type; }
 };
 
@@ -134,7 +134,7 @@ class FunctionCallNode : public ExpressionNode
     {
     }
     Position getStartPosition() const override { return callee->getStartPosition(); }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
 };
 
 class StatementNode : public AstNode
@@ -152,7 +152,7 @@ class ExpressionStatementNode : public StatementNode
     }
 
     Position getStartPosition() const override { return expression->getStartPosition(); }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
 };
 
 class StatementBlockNode : public StatementNode
@@ -166,7 +166,7 @@ class StatementBlockNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return pos; }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
 };
 
 class FunctionDeclarationNode : public AstNode
@@ -185,7 +185,7 @@ class FunctionDeclarationNode : public AstNode
     }
     Position getStartPosition() const override { return pos; }
     std::string getName() const { return name; }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
 };
 
 class FunctionLiteralNode : public ExpressionNode
@@ -201,7 +201,7 @@ class FunctionLiteralNode : public ExpressionNode
     {
     }
     Position getStartPosition() const override { return pos; }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
 };
 
 class IfStatementNode : public StatementNode
@@ -222,7 +222,7 @@ class IfStatementNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return pos; }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
 };
 
 class DeclarationNode : public StatementNode
@@ -241,7 +241,7 @@ class DeclarationNode : public StatementNode
     Position getStartPosition() const override { return pos; }
     std::string getIdentifierName() const { return identifier; }
     bool getModifier() { return modifier; }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
 };
 
 class ReturnStatementNode : public StatementNode
@@ -255,7 +255,7 @@ class ReturnStatementNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return pos; }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
 };
 
 class AssignNode : public StatementNode
@@ -270,7 +270,7 @@ class AssignNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return pos; }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
     std::string getIdentifierName() const { return identifier; }
 };
 
@@ -287,7 +287,7 @@ class WhileStatementNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return pos; }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
 };
 
 class ProgramNode : public AstNode
@@ -302,5 +302,5 @@ class ProgramNode : public AstNode
     {
         return declarations.empty() ? Position() : declarations.front()->getStartPosition();
     }
-    void accept(AstVisitor& visitor, int indent) override;
+    void accept(AstVisitor& visitor) override;
 };
