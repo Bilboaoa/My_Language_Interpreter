@@ -6,6 +6,7 @@
 #include "token.hpp"
 #include "position.hpp"
 #include "interpreter_exception.hpp"
+#include "astVisitor.hpp"
 
 struct FuncDefArgument
 {
@@ -47,7 +48,7 @@ class AstNode
    public:
     virtual ~AstNode() = default;
     virtual Position getStartPosition() const = 0;
-    virtual std::string toStr(int indent = 0) const = 0;
+    virtual void accept(AstVisitor& visitor, int indent) = 0;
 };
 
 class ExpressionNode : public AstNode
@@ -62,7 +63,7 @@ class NumberLiteralNode : public ExpressionNode
    public:
     NumberLiteralNode(std::variant<int, float> val, Position p) : value(val), pos(p) {}
     Position getStartPosition() const override { return pos; }
-    std::string toStr(int indent = 0) const override;
+    void accept(AstVisitor& visitor, int indent) override;
     std::variant<int, float> getValue() const { return value; }
 };
 
@@ -74,7 +75,7 @@ class StringLiteralNode : public ExpressionNode
    public:
     StringLiteralNode(std::string v, Position p) : val(v), pos(p) {}
     Position getStartPosition() const override { return pos; }
-    std::string toStr(int indent = 0) const override;
+    void accept(AstVisitor& visitor, int indent) override;
     std::string getValue() const { return val; }
 };
 
@@ -86,7 +87,7 @@ class IdentifierNode : public ExpressionNode
    public:
     IdentifierNode(std::string n, Position p) : name(n), pos(p) {}
     Position getStartPosition() const override { return pos; }
-    std::string toStr(int indent = 0) const override;
+    void accept(AstVisitor& visitor, int indent) override;
     std::string getName() const { return name; }
 };
 
@@ -104,7 +105,7 @@ class BinaryOpNode : public ExpressionNode
     }
     Position getStartPosition() const override { return left->getStartPosition(); }
     BinOperator getBinOp() const { return binOp; }
-    std::string toStr(int indent = 0) const override;
+    void accept(AstVisitor& visitor, int indent) override;
 };
 
 class TypeCastNode : public ExpressionNode
@@ -118,7 +119,7 @@ class TypeCastNode : public ExpressionNode
     {
     }
     Position getStartPosition() const override { return expression->getStartPosition(); }
-    std::string toStr(int indent = 0) const override;
+    void accept(AstVisitor& visitor, int indent) override;
     CastType getTargetType() const { return type; }
 };
 
@@ -133,7 +134,7 @@ class FunctionCallNode : public ExpressionNode
     {
     }
     Position getStartPosition() const override { return callee->getStartPosition(); }
-    std::string toStr(int indent = 0) const override;
+    void accept(AstVisitor& visitor, int indent) override;
 };
 
 class StatementNode : public AstNode
@@ -151,7 +152,7 @@ class ExpressionStatementNode : public StatementNode
     }
 
     Position getStartPosition() const override { return expression->getStartPosition(); }
-    std::string toStr(int indent = 0) const override;
+    void accept(AstVisitor& visitor, int indent) override;
 };
 
 class StatementBlockNode : public StatementNode
@@ -165,7 +166,7 @@ class StatementBlockNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return pos; }
-    std::string toStr(int indent) const override;
+    void accept(AstVisitor& visitor, int indent) override;
 };
 
 class FunctionDeclarationNode : public AstNode
@@ -184,7 +185,7 @@ class FunctionDeclarationNode : public AstNode
     }
     Position getStartPosition() const override { return pos; }
     std::string getName() const { return name; }
-    std::string toStr(int indent) const override;
+    void accept(AstVisitor& visitor, int indent) override;
 };
 
 class FunctionLiteralNode : public ExpressionNode
@@ -200,7 +201,7 @@ class FunctionLiteralNode : public ExpressionNode
     {
     }
     Position getStartPosition() const override { return pos; }
-    std::string toStr(int indent) const override;
+    void accept(AstVisitor& visitor, int indent) override;
 };
 
 class IfStatementNode : public StatementNode
@@ -221,7 +222,7 @@ class IfStatementNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return pos; }
-    std::string toStr(int indent) const override;
+    void accept(AstVisitor& visitor, int indent) override;
 };
 
 class DeclarationNode : public StatementNode
@@ -240,7 +241,7 @@ class DeclarationNode : public StatementNode
     Position getStartPosition() const override { return pos; }
     std::string getIdentifierName() const { return identifier; }
     bool getModifier() { return modifier; }
-    std::string toStr(int indent) const override;
+    void accept(AstVisitor& visitor, int indent) override;
 };
 
 class ReturnStatementNode : public StatementNode
@@ -254,7 +255,7 @@ class ReturnStatementNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return pos; }
-    std::string toStr(int indent) const override;
+    void accept(AstVisitor& visitor, int indent) override;
 };
 
 class AssignNode : public StatementNode
@@ -269,7 +270,7 @@ class AssignNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return pos; }
-    std::string toStr(int indent) const override;
+    void accept(AstVisitor& visitor, int indent) override;
     std::string getIdentifierName() const { return identifier; }
 };
 
@@ -286,7 +287,7 @@ class WhileStatementNode : public StatementNode
     {
     }
     Position getStartPosition() const override { return pos; }
-    std::string toStr(int indent) const override;
+    void accept(AstVisitor& visitor, int indent) override;
 };
 
 class ProgramNode : public AstNode
@@ -301,5 +302,5 @@ class ProgramNode : public AstNode
     {
         return declarations.empty() ? Position() : declarations.front()->getStartPosition();
     }
-    std::string toStr(int indent) const override;
+    void accept(AstVisitor& visitor, int indent) override;
 };

@@ -27,12 +27,11 @@ class Parser
     bool isIn(const std::vector<TokenType> types) const;
     Token consume(TokenType type, const std::string& errorMessage);
     InterpreterException error(const std::string& message) const;
-    
-    template<typename T>
+
+    template <typename T>
     T shall(T expected, const std::string& errMsg) const
     {
-        if (!expected)
-            throw error(errMsg);
+        if (!expected) throw error(errMsg);
         return std::move(expected);
     }
 
