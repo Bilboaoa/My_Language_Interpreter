@@ -2,6 +2,7 @@
 #include <iostream>
 #include <variant>
 #include "parser.hpp"
+#include "parserVisitor.hpp"
 
 int main(int argc, char** argv)
 {
@@ -21,6 +22,8 @@ int main(int argc, char** argv)
     Parser parser(lexer);
 
     std::unique_ptr<ProgramNode> program = parser.parseProgram();
-    std::cout << program->toStr(0) << std::endl;
+    ParserVisitor myVisitor;
+    program->accept(myVisitor);
+    std::cout << myVisitor.getParsedString() << std::endl;
     return 0;
 }

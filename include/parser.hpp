@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <memory>
 #include <optional>
@@ -21,14 +23,21 @@ class Parser
 
     Token advance();
     bool check(TokenType type) const;
-    bool match(std::vector<TokenType> tokens, bool consume = false);
+    bool match(const std::vector<TokenType> types);
+    bool isIn(const std::vector<TokenType> types) const;
     Token consume(TokenType type, const std::string& errorMessage);
     InterpreterException error(const std::string& message) const;
-    BinOperator getOperator();
-    CastType getCastType(Token typeToken);
+
+    template <typename T>
+    T shall(T expected, const std::string& errMsg) const
+    {
+        if (!expected) throw error(errMsg);
+        return std::move(expected);
+    }
 
     std::unique_ptr<FunctionDeclarationNode> parseFunctionDeclaration();
-    std::vector<FuncDefArgument> parseParameters();
+    std::vector<std::unique_ptr<FuncDefArgument>> parseParameters();
+    std::unique_ptr<FuncDefArgument> parseParameter();
     std::unique_ptr<StatementBlockNode> parseStatementBlock();
     std::unique_ptr<StatementNode> parseStatement();
     std::unique_ptr<IfStatementNode> parseIfStatement();

@@ -11,10 +11,18 @@ if(ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_link_options(--coverage)
 endif()
 
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp")
+file(GLOB_RECURSE SRC_FILES 
+    "src/*.cpp"
+    "src/visitators/*.cpp"
+)
 
-add_executable(bibl ${SOURCES})
-target_include_directories(bibl PRIVATE src include)
+add_executable(bibl ${SRC_FILES})
+
+target_include_directories(bibl 
+    PRIVATE 
+    include
+    include/visitors
+)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     add_compile_options(-Wall -Wextra -pedantic -Werror)
